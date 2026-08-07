@@ -121,6 +121,7 @@ export function FacturePrint() {
       <div className="invoice-print-page">
         <div className="invoice-header">
           <div className="invoice-entreprise">
+            <img src="/logo-jps.png" alt="" className="invoice-logo" />
             <div className="invoice-entreprise-nom">{entreprise?.nom ?? "—"}</div>
             {entreprise?.adresse && <div>{entreprise.adresse}</div>}
             {entreprise?.ville && <div>{entreprise.ville}</div>}

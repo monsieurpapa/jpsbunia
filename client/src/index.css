@@ -208,14 +208,9 @@ section h2 {
   width: 42px;
   height: 42px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 0.95rem;
-  letter-spacing: -0.02em;
+  background: #fff;
+  padding: 3px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
@@ -765,6 +760,9 @@ textarea:focus-visible {
 }
 
 .auth-mark {
+  width: 96px;
+  height: 96px;
+  padding: 6px;
   margin: 0 auto 0.25rem;
 }
 
@@ -1009,6 +1007,13 @@ textarea:focus-visible {
 .invoice-entreprise {
   font-size: 0.82rem;
   color: #374151;
+}
+
+.invoice-logo {
+  height: 48px;
+  width: auto;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .invoice-entreprise-nom {

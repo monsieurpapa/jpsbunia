@@ -90,7 +90,7 @@ export function Layout() {
       <aside className={"sidebar" + (mobileOpen ? " sidebar-open" : "")}>
         <div className="sidebar-brand">
           <div className="sidebar-brand-row">
-            <div className="sidebar-brand-mark">JPS</div>
+            <img src="/logo-jps.png" alt="JPS Dieu Merci" className="sidebar-brand-mark" />
             <div>
               <div className="sidebar-brand-name">JPS DIEU MERCI</div>
               <div className="sidebar-brand-subtitle">Transport &amp; Distribution</div>

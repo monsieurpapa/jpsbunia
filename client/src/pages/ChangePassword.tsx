@@ -39,7 +39,7 @@ export function ChangePassword() {
   return (
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <div className="sidebar-brand-mark auth-mark">JPS</div>
+        <img src="/logo-jps.png" alt="JPS Dieu Merci" className="sidebar-brand-mark auth-mark" />
         <h1>Changement de mot de passe</h1>
         <p className="auth-subtitle">
           {user?.doitChangerMotDePasse

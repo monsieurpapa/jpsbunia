@@ -30,7 +30,7 @@ export function Login() {
   return (
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <div className="sidebar-brand-mark auth-mark">JPS</div>
+        <img src="/logo-jps.png" alt="JPS Dieu Merci" className="sidebar-brand-mark auth-mark" />
         <h1>JPS DIEU MERCI</h1>
         <p className="auth-subtitle">Connectez-vous à votre espace de gestion</p>
 
