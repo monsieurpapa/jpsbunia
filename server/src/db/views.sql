@@ -28,3 +28,32 @@ from factures f
 join lignes_facture lf on lf.facture_id = f.id
 where f.type = 'FACTURE' and f.statut <> 'ANNULEE'
 group by 1, 2;
+
+create or replace view v_dettes_distributeurs as
+select
+    d.id as distributeur_id,
+    d.nom_point_vente,
+    d.ville,
+    d.plafond_credit,
+    o.devise,
+    sum(
+        case when o.sens_credit = 'REMBOURSEMENT' then -1 else 1 end
+        * (o.montant_creditation + o.montant_approvisionnement)
+    ) as solde_du
+from distributeurs d
+join operations_distribution o on o.distributeur_id = d.id and o.statut = 'CREDIT'
+group by d.id, d.nom_point_vente, d.ville, d.plafond_credit, o.devise;
+
+create or replace view v_commissions_distributeurs as
+select
+    d.id as distributeur_id,
+    d.nom_point_vente,
+    d.ville,
+    d.taux_commission,
+    o.devise,
+    sum(o.montant_creditation) as volume_vendu,
+    sum(o.montant_creditation) * d.taux_commission as commission_due
+from distributeurs d
+join operations_distribution o on o.distributeur_id = d.id
+where o.type_operation in ('VENTE_CREDIT_CGA','VENTE_MATERIELS','VENTE_ACCESSOIRES','VENTE_DECODEURS','VENTE_PARABOLES')
+group by d.id, d.nom_point_vente, d.ville, d.taux_commission, o.devise;

@@ -147,7 +147,10 @@ export function Layout() {
               <div className="sidebar-user-avatar">{initials(user.nom)}</div>
               <div>
                 <div className="sidebar-user-name">{user.nom}</div>
-                <div className="sidebar-user-role">{user.roleLabel}</div>
+                <div className="sidebar-user-role">
+                  {user.roleLabel}
+                  {user.villeAffectation ? ` · ${user.villeAffectation}` : ""}
+                </div>
               </div>
             </div>
             <button className="sidebar-logout-btn" onClick={handleLogout} title="Se déconnecter">

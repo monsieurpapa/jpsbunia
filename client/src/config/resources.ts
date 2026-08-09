@@ -121,6 +121,8 @@ export const distributeursFields: FieldConfig[] = [
     ],
   },
   { key: "canalPaiementId", label: "Canal de paiement habituel", type: "select", optionsResource: "canaux-paiement", optionsLabelKey: "libelle" },
+  { key: "plafondCredit", label: "Plafond de crédit (USD)", type: "number", defaultValue: 100 },
+  { key: "tauxCommission", label: "Taux de commission JPS (ex. 0.05 = 5%)", type: "number", defaultValue: 0 },
   { key: "actif", label: "Actif", type: "checkbox", defaultValue: true },
 ];
 
@@ -156,6 +158,16 @@ export const operationsDistributionFields: FieldConfig[] = [
       { value: "CREDIT", label: "Crédit" },
     ],
   },
+  {
+    key: "sensCredit",
+    label: "Si crédit : octroi ou remboursement",
+    type: "select",
+    defaultValue: "OCTROI",
+    staticOptions: [
+      { value: "OCTROI", label: "Octroi de crédit au distributeur" },
+      { value: "REMBOURSEMENT", label: "Remboursement reçu du distributeur" },
+    ],
+  },
   { key: "responsableId", label: "Responsable", type: "select", optionsResource: "employes", optionsLabelKey: "nom" },
   { key: "devise", label: "Devise", type: "select", staticOptions: DEVISE_OPTIONS, defaultValue: "CDF" },
 ];
@@ -189,6 +201,7 @@ export const employesFields: FieldConfig[] = [
   { key: "villeAffectation", label: "Ville d'affectation", type: "text" },
   { key: "telephone", label: "Téléphone", type: "text" },
   { key: "dateEmbauche", label: "Date d'embauche", type: "date" },
+  { key: "salaireBase", label: "Salaire de base mensuel", type: "number" },
   { key: "actif", label: "Actif", type: "checkbox", defaultValue: true },
 ];
 
@@ -203,10 +216,12 @@ export const depensesPersonnelFields: FieldConfig[] = [
       { value: "SALAIRE", label: "Salaire" },
       { value: "AVANCE", label: "Avance" },
       { value: "PRIME", label: "Prime" },
+      { value: "RETENUE", label: "Retenue" },
       { value: "AUTRE", label: "Autre" },
     ],
   },
   { key: "moisConcerne", label: "Mois concerné", type: "date", required: true },
+  { key: "pourcentagePrime", label: "Si prime : % du salaire de base (ex. 0.25 = 25%)", type: "number" },
   { key: "montant", label: "Montant", type: "number", required: true },
   { key: "devise", label: "Devise", type: "select", required: true, staticOptions: DEVISE_OPTIONS },
   { key: "datePaiement", label: "Date de paiement", type: "date" },
@@ -244,6 +259,33 @@ export const depensesFonctionnementFields: FieldConfig[] = [
   { key: "dateDepense", label: "Date", type: "date", required: true },
   { key: "fournisseur", label: "Fournisseur", type: "text" },
   { key: "justificatifUrl", label: "Justificatif (URL)", type: "text" },
+  { key: "observation", label: "Observation", type: "textarea" },
+];
+
+export const bonsLivraisonFields: FieldConfig[] = [
+  { key: "numero", label: "N° bon de livraison", type: "text" },
+  { key: "dateExpedition", label: "Date d'expédition", type: "date", required: true },
+  { key: "villeDepart", label: "Ville de départ", type: "text", required: true, defaultValue: "BUNIA" },
+  { key: "villeArrivee", label: "Ville d'arrivée", type: "text", required: true },
+  { key: "vehiculeId", label: "Véhicule", type: "select", optionsResource: "vehicules", optionsLabelKey: "immatriculation" },
+  { key: "chauffeurId", label: "Chauffeur", type: "select", optionsResource: "employes", optionsLabelKey: "nom" },
+  { key: "clientId", label: "Client", type: "select", optionsResource: "clients", optionsLabelKey: "nom" },
+  { key: "descriptionMarchandise", label: "Marchandise transportée", type: "text" },
+  { key: "poidsKg", label: "Poids (kg)", type: "number" },
+  {
+    key: "statut",
+    label: "Statut",
+    type: "select",
+    defaultValue: "EN_COURS",
+    staticOptions: [
+      { value: "EN_COURS", label: "En cours" },
+      { value: "LIVRE", label: "Livré" },
+      { value: "ANNULE", label: "Annulé" },
+    ],
+  },
+  { key: "nomSignataire", label: "Reçu par (nom du signataire)", type: "text" },
+  { key: "dateLivraison", label: "Date de livraison", type: "date" },
+  { key: "signe", label: "Signé à la réception", type: "checkbox", defaultValue: false },
   { key: "observation", label: "Observation", type: "textarea" },
 ];
 

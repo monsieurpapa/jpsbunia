@@ -12,6 +12,8 @@ export interface AuthUser {
   email: string;
   role: Role;
   doitChangerMotDePasse: boolean;
+  villeAffectation: string | null;
+  fonctionAffectation: string | null;
 }
 
 declare global {
@@ -47,6 +49,8 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     email: row.email,
     role: row.role as Role,
     doitChangerMotDePasse: row.doitChangerMotDePasse,
+    villeAffectation: row.villeAffectation,
+    fonctionAffectation: row.fonctionAffectation,
   };
   next();
 }

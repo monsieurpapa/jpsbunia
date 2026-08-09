@@ -42,6 +42,8 @@ export const utilisateurs = pgTable(
     email: text("email").notNull().unique(),
     motDePasseHash: text("mot_de_passe_hash").notNull(),
     role: text("role").notNull(),
+    villeAffectation: text("ville_affectation"),
+    fonctionAffectation: text("fonction_affectation"),
     actif: boolean("actif").notNull().default(true),
     doitChangerMotDePasse: boolean("doit_changer_mot_de_passe").notNull().default(true),
     creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
@@ -51,6 +53,10 @@ export const utilisateurs = pgTable(
     check(
       "utilisateurs_role_check",
       sql`${t.role} in ('ADMIN','GESTIONNAIRE','COMPTABLE','CAISSIER','LECTURE_SEULE')`,
+    ),
+    check(
+      "utilisateurs_fonction_affectation_check",
+      sql`${t.fonctionAffectation} is null or ${t.fonctionAffectation} in ('CREDITATION','LOGISTIQUE')`,
     ),
   ],
 );
@@ -77,6 +83,7 @@ export const employes = pgTable("employes", {
   villeAffectation: text("ville_affectation"),
   telephone: text("telephone"),
   dateEmbauche: date("date_embauche"),
+  salaireBase: numeric("salaire_base", { precision: 18, scale: 2 }),
   actif: boolean("actif").notNull().default(true),
 });
 
@@ -110,6 +117,8 @@ export const distributeurs = pgTable(
     canalPaiementId: smallint("canal_paiement_id").references(
       () => canauxPaiement.id,
     ),
+    plafondCredit: numeric("plafond_credit", { precision: 18, scale: 2 }).notNull().default("100"),
+    tauxCommission: numeric("taux_commission", { precision: 5, scale: 4 }).notNull().default("0"),
     actif: boolean("actif").notNull().default(true),
   },
   (t) => [
@@ -301,6 +310,7 @@ export const operationsDistribution = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     dateOperation: date("date_operation").notNull(),
     distributeurId: uuid("distributeur_id").references(() => distributeurs.id),
+    ville: text("ville"),
     typeOperation: text("type_operation").notNull(),
     description: text("description"),
     canalPaiementId: smallint("canal_paiement_id")
@@ -316,6 +326,7 @@ export const operationsDistribution = pgTable(
       .notNull()
       .default("0"),
     statut: text("statut").notNull().default("COMPTANT"),
+    sensCredit: text("sens_credit").default("OCTROI"),
     responsableId: uuid("responsable_id").references(() => employes.id),
     devise: text("devise").notNull().default("CDF"),
   },
@@ -325,6 +336,10 @@ export const operationsDistribution = pgTable(
       sql`${t.typeOperation} in ('VENTE_CREDIT_CGA','VENTE_MATERIELS','VENTE_ACCESSOIRES','VENTE_DECODEURS','VENTE_PARABOLES','CREDITATION','APPROVISIONNEMENT','AUTRE')`,
     ),
     check("operations_distribution_statut_check", sql`${t.statut} in ('COMPTANT','CREDIT')`),
+    check(
+      "operations_distribution_sens_credit_check",
+      sql`${t.sensCredit} is null or ${t.sensCredit} in ('OCTROI','REMBOURSEMENT')`,
+    ),
     check("operations_distribution_devise_check", sql`${t.devise} in ('CDF','USD')`),
   ],
 );
@@ -353,6 +368,7 @@ export const depensesPersonnel = pgTable(
     typeDepense: text("type_depense").notNull(),
     moisConcerne: date("mois_concerne").notNull(),
     montant: numeric("montant", { precision: 18, scale: 2 }).notNull(),
+    pourcentagePrime: numeric("pourcentage_prime", { precision: 5, scale: 4 }),
     devise: text("devise").notNull(),
     datePaiement: date("date_paiement"),
     statut: text("statut").notNull().default("NON_PAYE"),
@@ -361,7 +377,7 @@ export const depensesPersonnel = pgTable(
   (t) => [
     check(
       "depenses_personnel_type_check",
-      sql`${t.typeDepense} in ('SALAIRE','AVANCE','PRIME','AUTRE')`,
+      sql`${t.typeDepense} in ('SALAIRE','AVANCE','PRIME','RETENUE','AUTRE')`,
     ),
     check("depenses_personnel_devise_check", sql`${t.devise} in ('CDF','USD')`),
     check("depenses_personnel_statut_check", sql`${t.statut} in ('NON_PAYE','PAYE')`),
@@ -408,5 +424,34 @@ export const mouvementsCaisse = pgTable(
       "mouvements_caisse_source_type_check",
       sql`${t.sourceType} in ('FACTURE','OPERATION_DISTRIBUTION','DEPENSE_PERSONNEL','DEPENSE_FONCTIONNEMENT','AUTRE')`,
     ),
+  ],
+);
+
+// ----------------------------------------------------------------------------
+// 10. BONS DE LIVRAISON (TRANSPORT)
+// ----------------------------------------------------------------------------
+export const bonsLivraison = pgTable(
+  "bons_livraison",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    numero: text("numero").unique(),
+    dateExpedition: date("date_expedition").notNull(),
+    villeDepart: text("ville_depart").notNull().default("BUNIA"),
+    villeArrivee: text("ville_arrivee").notNull(),
+    vehiculeId: uuid("vehicule_id").references(() => vehicules.id),
+    chauffeurId: uuid("chauffeur_id").references(() => employes.id),
+    clientId: uuid("client_id").references(() => clients.id),
+    descriptionMarchandise: text("description_marchandise"),
+    poidsKg: numeric("poids_kg", { precision: 10, scale: 2 }),
+    factureId: uuid("facture_id").references(() => factures.id),
+    statut: text("statut").notNull().default("EN_COURS"),
+    nomSignataire: text("nom_signataire"),
+    dateLivraison: date("date_livraison"),
+    signe: boolean("signe").notNull().default(false),
+    observation: text("observation"),
+    creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check("bons_livraison_statut_check", sql`${t.statut} in ('EN_COURS','LIVRE','ANNULE')`),
   ],
 );

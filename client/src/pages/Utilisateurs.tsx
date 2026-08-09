@@ -13,12 +13,21 @@ const ROLE_OPTIONS: { value: Role; label: string }[] = [
   { value: "LECTURE_SEULE", label: "Lecture seule" },
 ];
 
+type Fonction = "CREDITATION" | "LOGISTIQUE";
+
+const FONCTION_OPTIONS: { value: Fonction; label: string }[] = [
+  { value: "CREDITATION", label: "Créditation (voit uniquement les crédits)" },
+  { value: "LOGISTIQUE", label: "Logistique (voit le matériel/approvisionnement)" },
+];
+
 interface Utilisateur {
   id: string;
   nom: string;
   email: string;
   role: Role;
   roleLabel: string;
+  villeAffectation: string | null;
+  fonctionAffectation: Fonction | null;
   actif: boolean;
   doitChangerMotDePasse: boolean;
   derniereConnexionLe: string | null;
@@ -34,6 +43,8 @@ export function Utilisateurs() {
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("LECTURE_SEULE");
+  const [villeAffectation, setVilleAffectation] = useState("");
+  const [fonctionAffectation, setFonctionAffectation] = useState<Fonction | "">("");
 
   const [editing, setEditing] = useState<Utilisateur | null>(null);
 
@@ -59,11 +70,19 @@ export function Utilisateurs() {
     e.preventDefault();
     setError(null);
     try {
-      const created = await apiCreate("utilisateurs", { nom, email, role });
+      const created = await apiCreate("utilisateurs", {
+        nom,
+        email,
+        role,
+        villeAffectation: villeAffectation || null,
+        fonctionAffectation: fonctionAffectation || null,
+      });
       setShowCreate(false);
       setNom("");
       setEmail("");
       setRole("LECTURE_SEULE");
+      setVilleAffectation("");
+      setFonctionAffectation("");
       setRevealName(created.nom);
       setRevealPassword(created.tempPassword);
       await reload();
@@ -81,6 +100,8 @@ export function Utilisateurs() {
         nom: editing.nom,
         role: editing.role,
         actif: editing.actif,
+        villeAffectation: editing.villeAffectation || null,
+        fonctionAffectation: editing.fonctionAffectation || null,
       });
       setEditing(null);
       await reload();
@@ -136,6 +157,8 @@ export function Utilisateurs() {
                 <th>Nom</th>
                 <th>E-mail</th>
                 <th>Rôle</th>
+                <th>Ville</th>
+                <th>Fonction</th>
                 <th>Statut</th>
                 <th>Mot de passe</th>
                 <th>Dernière connexion</th>
@@ -148,6 +171,12 @@ export function Utilisateurs() {
                   <td>{u.nom}</td>
                   <td>{u.email}</td>
                   <td>{u.roleLabel}</td>
+                  <td>{u.villeAffectation ?? <span className="stat-helper">Toutes</span>}</td>
+                  <td>
+                    {u.fonctionAffectation
+                      ? FONCTION_OPTIONS.find((f) => f.value === u.fonctionAffectation)?.label.split(" (")[0]
+                      : <span className="stat-helper">—</span>}
+                  </td>
                   <td><Badge value={u.actif ? "ACTIF" : "TERMINE"} /></td>
                   <td>
                     {u.doitChangerMotDePasse ? (
@@ -176,7 +205,7 @@ export function Utilisateurs() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="empty-row">Aucun utilisateur pour l'instant.</td>
+                  <td colSpan={9} className="empty-row">Aucun utilisateur pour l'instant.</td>
                 </tr>
               )}
             </tbody>
@@ -201,6 +230,26 @@ export function Utilisateurs() {
               <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
                 {ROLE_OPTIONS.map((r) => (
                   <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="form-field">
+              <span>Ville d'affectation</span>
+              <input
+                placeholder="Laisser vide = voit toutes les villes (DG, DAF…)"
+                value={villeAffectation}
+                onChange={(e) => setVilleAffectation(e.target.value)}
+              />
+            </label>
+            <label className="form-field">
+              <span>Fonction (restreint le journal des opérations)</span>
+              <select
+                value={fonctionAffectation}
+                onChange={(e) => setFonctionAffectation(e.target.value as Fonction | "")}
+              >
+                <option value="">Aucune restriction</option>
+                {FONCTION_OPTIONS.map((f) => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
                 ))}
               </select>
             </label>
@@ -232,6 +281,28 @@ export function Utilisateurs() {
               >
                 {ROLE_OPTIONS.map((r) => (
                   <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="form-field">
+              <span>Ville d'affectation</span>
+              <input
+                placeholder="Laisser vide = voit toutes les villes (DG, DAF…)"
+                value={editing.villeAffectation ?? ""}
+                onChange={(e) => setEditing({ ...editing, villeAffectation: e.target.value || null })}
+              />
+            </label>
+            <label className="form-field">
+              <span>Fonction (restreint le journal des opérations)</span>
+              <select
+                value={editing.fonctionAffectation ?? ""}
+                onChange={(e) =>
+                  setEditing({ ...editing, fonctionAffectation: (e.target.value || null) as Fonction | null })
+                }
+              >
+                <option value="">Aucune restriction</option>
+                {FONCTION_OPTIONS.map((f) => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
                 ))}
               </select>
             </label>

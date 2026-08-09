@@ -10,6 +10,7 @@ import { Login } from "./pages/Login";
 import { ChangePassword } from "./pages/ChangePassword";
 import { Utilisateurs } from "./pages/Utilisateurs";
 import { FacturePrint } from "./pages/FacturePrint";
+import { DettesDistributeurs } from "./pages/DettesDistributeurs";
 import {
   clientsFields,
   servicesFields,
@@ -23,6 +24,7 @@ import {
   depensesPersonnelFields,
   depensesFonctionnementFields,
   mouvementsCaisseFields,
+  bonsLivraisonFields,
 } from "./config/resources";
 
 export default function App() {
@@ -87,6 +89,18 @@ export default function App() {
                 }
               />
               <Route
+                path="/bons-livraison"
+                element={
+                  <ModuleGate module="transport">
+                    <CrudPage
+                      resource="bons-livraison"
+                      title="Bons de livraison"
+                      fields={bonsLivraisonFields}
+                    />
+                  </ModuleGate>
+                }
+              />
+              <Route
                 path="/contrats-location"
                 element={
                   <ModuleGate module="locations">
@@ -123,6 +137,14 @@ export default function App() {
                       title="Journal des opérations de distribution"
                       fields={operationsDistributionFields}
                     />
+                  </ModuleGate>
+                }
+              />
+              <Route
+                path="/dettes-distributeurs"
+                element={
+                  <ModuleGate module="distribution">
+                    <DettesDistributeurs />
                   </ModuleGate>
                 }
               />

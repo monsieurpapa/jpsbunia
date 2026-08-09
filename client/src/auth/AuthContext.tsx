@@ -8,6 +8,8 @@ export interface CurrentUser {
   role: Role;
   roleLabel: string;
   doitChangerMotDePasse: boolean;
+  villeAffectation: string | null;
+  fonctionAffectation: "CREDITATION" | "LOGISTIQUE" | null;
 }
 
 interface AuthState {

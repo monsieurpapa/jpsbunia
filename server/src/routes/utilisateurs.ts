@@ -15,12 +15,17 @@ function publicUser(row: typeof utilisateurs.$inferSelect) {
     email: row.email,
     role: row.role as Role,
     roleLabel: ROLE_LABELS[row.role as Role],
+    villeAffectation: row.villeAffectation,
+    fonctionAffectation: row.fonctionAffectation,
     actif: row.actif,
     doitChangerMotDePasse: row.doitChangerMotDePasse,
     creeLe: row.creeLe,
     derniereConnexionLe: row.derniereConnexionLe,
   };
 }
+
+const FONCTIONS = ["CREDITATION", "LOGISTIQUE"] as const;
+type Fonction = (typeof FONCTIONS)[number];
 
 async function countOtherActiveAdmins(excludeId: string): Promise<number> {
   const rows = await db
@@ -36,9 +41,18 @@ utilisateursRouter.get("/", async (_req, res) => {
 });
 
 utilisateursRouter.post("/", async (req, res) => {
-  const { nom, email, role } = req.body as { nom?: string; email?: string; role?: Role };
+  const { nom, email, role, villeAffectation, fonctionAffectation } = req.body as {
+    nom?: string;
+    email?: string;
+    role?: Role;
+    villeAffectation?: string | null;
+    fonctionAffectation?: Fonction | null;
+  };
   if (!nom || !email || !role || !ROLES.includes(role)) {
     return res.status(400).json({ error: "CHAMPS_INVALIDES" });
+  }
+  if (fonctionAffectation && !FONCTIONS.includes(fonctionAffectation)) {
+    return res.status(400).json({ error: "FONCTION_INVALIDE" });
   }
 
   const tempPassword = generateTempPassword();
@@ -47,7 +61,14 @@ utilisateursRouter.post("/", async (req, res) => {
   try {
     const [row] = await db
       .insert(utilisateurs)
-      .values({ nom, email: email.trim().toLowerCase(), role, motDePasseHash })
+      .values({
+        nom,
+        email: email.trim().toLowerCase(),
+        role,
+        motDePasseHash,
+        villeAffectation: villeAffectation || null,
+        fonctionAffectation: fonctionAffectation || null,
+      })
       .returning();
     res.status(201).json({ ...publicUser(row), tempPassword });
   } catch (err: any) {
@@ -56,9 +77,18 @@ utilisateursRouter.post("/", async (req, res) => {
 });
 
 utilisateursRouter.put("/:id", async (req, res) => {
-  const { nom, role, actif } = req.body as { nom?: string; role?: Role; actif?: boolean };
+  const { nom, role, actif, villeAffectation, fonctionAffectation } = req.body as {
+    nom?: string;
+    role?: Role;
+    actif?: boolean;
+    villeAffectation?: string | null;
+    fonctionAffectation?: Fonction | null;
+  };
   if (role && !ROLES.includes(role)) {
     return res.status(400).json({ error: "ROLE_INVALIDE" });
+  }
+  if (fonctionAffectation && !FONCTIONS.includes(fonctionAffectation)) {
+    return res.status(400).json({ error: "FONCTION_INVALIDE" });
   }
 
   const [existing] = await db.select().from(utilisateurs).where(eq(utilisateurs.id, req.params.id));
@@ -76,6 +106,10 @@ utilisateursRouter.put("/:id", async (req, res) => {
         ...(nom !== undefined ? { nom } : {}),
         ...(role !== undefined ? { role } : {}),
         ...(actif !== undefined ? { actif } : {}),
+        ...(villeAffectation !== undefined ? { villeAffectation: villeAffectation || null } : {}),
+        ...(fonctionAffectation !== undefined
+          ? { fonctionAffectation: fonctionAffectation || null }
+          : {}),
       })
       .where(eq(utilisateurs.id, req.params.id))
       .returning();

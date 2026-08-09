@@ -37,6 +37,8 @@ function publicUser(row: typeof utilisateurs.$inferSelect) {
     role: row.role as Role,
     roleLabel: ROLE_LABELS[row.role as Role],
     doitChangerMotDePasse: row.doitChangerMotDePasse,
+    villeAffectation: row.villeAffectation,
+    fonctionAffectation: row.fonctionAffectation,
   };
 }
 

@@ -48,7 +48,29 @@ create table employes (
     ville_affectation text,
     telephone       text,
     date_embauche   date,
+    salaire_base    numeric(18,2),
     actif           boolean not null default true
+);
+
+-- ----------------------------------------------------------------------------
+-- 0.5 UTILISATEURS & AUTHENTIFICATION
+-- ----------------------------------------------------------------------------
+create table utilisateurs (
+    id                          uuid primary key default gen_random_uuid(),
+    nom                         text not null,
+    email                       text not null unique,
+    mot_de_passe_hash           text not null,
+    role                        text not null check (role in ('ADMIN','GESTIONNAIRE','COMPTABLE','CAISSIER','LECTURE_SEULE')),
+    -- NULL = voit toutes les villes (DG, DAF, Administrateur) ; sinon restreint aux
+    -- opérations de cette ville (distributeurs, contrats de location, employés).
+    ville_affectation           text,
+    -- Restreint en plus, au sein du module distribution, aux opérations de la
+    -- famille correspondante (CREDITATION ou LOGISTIQUE) ; NULL = pas de restriction.
+    fonction_affectation        text check (fonction_affectation is null or fonction_affectation in ('CREDITATION','LOGISTIQUE')),
+    actif                       boolean not null default true,
+    doit_changer_mot_de_passe   boolean not null default true,
+    cree_le                     timestamptz not null default now(),
+    derniere_connexion_le       timestamptz
 );
 
 -- ----------------------------------------------------------------------------
@@ -77,6 +99,8 @@ create table distributeurs (
     ville               text,
     statut_defaut       text not null default 'COMPTANT' check (statut_defaut in ('COMPTANT','CREDIT')),
     canal_paiement_id   smallint references canaux_paiement(id),
+    plafond_credit      numeric(18,2) not null default 100,   -- en USD, ajustable (100 par défaut, jusqu'à 3000 négociable)
+    taux_commission     numeric(5,4) not null default 0,       -- commission JPS, varie selon le volume vendu par le DA
     actif               boolean not null default true
 );
 
@@ -199,12 +223,15 @@ create table operations_distribution (
     id                          uuid primary key default gen_random_uuid(),
     date_operation              date not null,
     distributeur_id             uuid references distributeurs(id),
+    ville                       text,                 -- dénormalisé depuis distributeurs.ville, pour le RBAC par ville
     type_operation              text not null check (type_operation in ('VENTE_CREDIT_CGA','VENTE_MATERIELS','VENTE_ACCESSOIRES','VENTE_DECODEURS','VENTE_PARABOLES','CREDITATION','APPROVISIONNEMENT','AUTRE')),
     description                 text,                 -- ex "CREDITATION REABONNEMENT", "Approvisionnement compte principal"
     canal_paiement_id           smallint not null references canaux_paiement(id),
     montant_creditation         numeric(18,2) not null default 0,
     montant_approvisionnement   numeric(18,2) not null default 0,
     statut                      text not null default 'COMPTANT' check (statut in ('COMPTANT','CREDIT')),
+    -- pertinent seulement quand statut = 'CREDIT' : octroi de crédit au distributeur, ou remboursement reçu de sa part
+    sens_credit                 text default 'OCTROI' check (sens_credit is null or sens_credit in ('OCTROI','REMBOURSEMENT')),
     responsable_id              uuid references employes(id),
     devise                      text not null default 'CDF' check (devise in ('CDF','USD'))
 );
@@ -223,9 +250,10 @@ create table stock_initial (
 create table depenses_personnel (
     id              uuid primary key default gen_random_uuid(),
     employe_id      uuid not null references employes(id),
-    type_depense    text not null check (type_depense in ('SALAIRE','AVANCE','PRIME','AUTRE')),
+    type_depense    text not null check (type_depense in ('SALAIRE','AVANCE','PRIME','RETENUE','AUTRE')),
     mois_concerne   date not null,           -- 1er du mois concerné, ex 2026-05-01 pour "Mai 2026"
     montant         numeric(18,2) not null,
+    pourcentage_prime numeric(5,4),          -- si type = PRIME : % du salaire de base de l'employé (informatif, le montant payé reste dans "montant")
     devise          text not null check (devise in ('CDF','USD')),
     date_paiement   date,
     statut          text not null default 'NON_PAYE' check (statut in ('NON_PAYE','PAYE')),
@@ -258,6 +286,29 @@ create table mouvements_caisse (
     source_type     text not null check (source_type in ('FACTURE','OPERATION_DISTRIBUTION','DEPENSE_PERSONNEL','DEPENSE_FONCTIONNEMENT','AUTRE')),
     source_id       uuid,                    -- référence libre vers la table source (facture, operation, dépense...)
     observation     text
+);
+
+-- ----------------------------------------------------------------------------
+-- 10. BONS DE LIVRAISON (TRANSPORT)
+-- ----------------------------------------------------------------------------
+create table bons_livraison (
+    id                      uuid primary key default gen_random_uuid(),
+    numero                  text unique,
+    date_expedition         date not null,
+    ville_depart            text not null default 'BUNIA',
+    ville_arrivee           text not null,
+    vehicule_id             uuid references vehicules(id),
+    chauffeur_id            uuid references employes(id),
+    client_id               uuid references clients(id),
+    description_marchandise text,
+    poids_kg                numeric(10,2),
+    facture_id              uuid references factures(id),
+    statut                  text not null default 'EN_COURS' check (statut in ('EN_COURS','LIVRE','ANNULE')),
+    nom_signataire          text,        -- personne qui a réceptionné la marchandise
+    date_livraison          date,
+    signe                   boolean not null default false,   -- confirmation de signature (pas de scan/upload dans cette version)
+    observation             text,
+    cree_le                 timestamptz not null default now()
 );
 
 -- ============================================================================
@@ -294,6 +345,38 @@ from factures f
 join lignes_facture lf on lf.facture_id = f.id
 where f.type = 'FACTURE' and f.statut <> 'ANNULEE'
 group by 1, 2;
+
+-- Solde de dette par distributeur (octrois de crédit moins remboursements reçus),
+-- avec le plafond autorisé pour repérer les dépassements côté application.
+create view v_dettes_distributeurs as
+select
+    d.id as distributeur_id,
+    d.nom_point_vente,
+    d.ville,
+    d.plafond_credit,
+    o.devise,
+    sum(
+        case when o.sens_credit = 'REMBOURSEMENT' then -1 else 1 end
+        * (o.montant_creditation + o.montant_approvisionnement)
+    ) as solde_du
+from distributeurs d
+join operations_distribution o on o.distributeur_id = d.id and o.statut = 'CREDIT'
+group by d.id, d.nom_point_vente, d.ville, d.plafond_credit, o.devise;
+
+-- Commission JPS par distributeur (taux négocié par DA appliqué au volume vendu).
+create view v_commissions_distributeurs as
+select
+    d.id as distributeur_id,
+    d.nom_point_vente,
+    d.ville,
+    d.taux_commission,
+    o.devise,
+    sum(o.montant_creditation) as volume_vendu,
+    sum(o.montant_creditation) * d.taux_commission as commission_due
+from distributeurs d
+join operations_distribution o on o.distributeur_id = d.id
+where o.type_operation in ('VENTE_CREDIT_CGA','VENTE_MATERIELS','VENTE_ACCESSOIRES','VENTE_DECODEURS','VENTE_PARABOLES')
+group by d.id, d.nom_point_vente, d.ville, d.taux_commission, o.devise;
 
 -- ============================================================================
 -- DONNÉES DE RÉFÉRENCE INITIALES

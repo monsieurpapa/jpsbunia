@@ -87,6 +87,7 @@ export const RESOURCE_MODULE: Record<string, Module> = {
   "factures-a-rembourser": "facturation",
   encaissements: "facturation",
   "tarifs-transport": "transport",
+  "bons-livraison": "transport",
   "contrats-location": "locations",
   vehicules: "locations",
   distributeurs: "distribution",

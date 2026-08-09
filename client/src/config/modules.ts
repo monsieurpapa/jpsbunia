@@ -15,6 +15,8 @@ import {
   Banknote,
   Landmark,
   ShieldCheck,
+  TrendingUp,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 import type { Module } from "./permissions";
@@ -85,7 +87,10 @@ export const NAV_GROUPS: NavGroupConfig[] = [
     title: "Transport",
     color: "amber",
     module: "transport",
-    links: [{ to: "/tarifs-transport", label: "Grille tarifaire", icon: Truck }],
+    links: [
+      { to: "/tarifs-transport", label: "Grille tarifaire", icon: Truck },
+      { to: "/bons-livraison", label: "Bons de livraison", icon: ClipboardCheck },
+    ],
   },
   {
     title: "Locations",
@@ -103,6 +108,7 @@ export const NAV_GROUPS: NavGroupConfig[] = [
     links: [
       { to: "/distributeurs", label: "Distributeurs", icon: Share2 },
       { to: "/operations-distribution", label: "Journal des opérations", icon: Activity },
+      { to: "/dettes-distributeurs", label: "Dettes & commissions", icon: TrendingUp },
     ],
   },
   {
