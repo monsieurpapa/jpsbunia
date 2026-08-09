@@ -5,7 +5,7 @@ import { apiCreate, apiDelete, apiList, apiUpdate } from "../api";
 import { groupTitleForPath, moduleForPath } from "../config/modules";
 import { Badge } from "./Badge";
 import { useAuth } from "../auth/AuthContext";
-import { canWrite } from "../config/permissions";
+import { canAccess, canWrite, RESOURCE_MODULE } from "../config/permissions";
 
 export type FieldType = "text" | "number" | "date" | "checkbox" | "select" | "textarea";
 
@@ -74,11 +74,20 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
       new Set(fields.filter((f) => f.optionsResource).map((f) => f.optionsResource!)),
     );
     resourcesToFetch.forEach(async (res) => {
-      const data = await apiList(res);
-      setOptionsByResource((prev) => ({ ...prev, [res]: data }));
+      // Un rôle sans accès en lecture au module de cette ressource (ex: Caissier
+      // sur "employes") recevrait un 403 — inutile d'essayer, le champ/filtre
+      // correspondant reste simplement vide plutôt que de polluer la console.
+      const mod = RESOURCE_MODULE[res];
+      if (mod && user && !canAccess(user.role, mod)) return;
+      try {
+        const data = await apiList(res);
+        setOptionsByResource((prev) => ({ ...prev, [res]: data }));
+      } catch {
+        // Filet de sécurité pour toute autre ressource non cartographiée ci-dessus.
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resource]);
+  }, [resource, user?.role]);
 
   function openNew() {
     const initial: Row = {};

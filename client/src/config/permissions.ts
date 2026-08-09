@@ -78,6 +78,23 @@ export const ROLE_PERMISSIONS: Record<Role, Record<Module, Access>> = {
   },
 };
 
+/**
+ * Fait correspondre chaque ressource référencée comme `optionsResource` (pour
+ * peupler un menu déroulant) à son module d'autorisation — copie côté client
+ * de `RESOURCE_MODULE` (server/src/auth/permissions.ts). Utilisé pour éviter
+ * de tenter un appel voué à un 403 quand l'utilisateur n'a pas accès en
+ * lecture au module correspondant (ex: "Responsable" → employés → personnel,
+ * invisible pour un Caissier).
+ */
+export const RESOURCE_MODULE: Record<string, Module> = {
+  clients: "facturation",
+  distributeurs: "distribution",
+  employes: "personnel",
+  "canaux-paiement": "referentiel",
+  "categories-activite": "referentiel",
+  vehicules: "locations",
+};
+
 export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: "Administrateur",
   GESTIONNAIRE: "Gestionnaire",
