@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, X, Search, Printer } from "lucide-react";
+import { Plus, X, Search, Printer, Trash2 } from "lucide-react";
 import { apiCreate, apiDelete, apiList } from "../api";
 import { Badge } from "../components/Badge";
 import { useAuth } from "../auth/AuthContext";
@@ -251,7 +251,7 @@ export function Factures() {
                   </Link>
                   {canEdit && (
                     <button className="btn-danger" onClick={() => handleDelete(f.id)}>
-                      Supprimer
+                      <Trash2 size={13} /> Supprimer
                     </button>
                   )}
                 </td>

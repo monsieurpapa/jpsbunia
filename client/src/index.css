@@ -1,8 +1,9 @@
 /* ============================================================================
    JPS DIEU MERCI — design system
    Sidebar sombre + navigation groupée par activité, cartes de synthèse
-   colorées par module, typographie Inter avec chiffres tabulaires (essentiel
-   pour un outil financier où les colonnes de montants doivent s'aligner).
+   colorées par module, typographie IBM Plex Sans avec chiffres tabulaires
+   (essentiel pour un outil financier où les colonnes de montants doivent
+   s'aligner) — alignée sur la charte des autres outils AVUDS/JPS.
    ============================================================================ */
 
 :root {
@@ -34,7 +35,7 @@
   --accent: #2563eb;
   --accent-soft: #eff6ff;
 
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;
 }
 
@@ -308,17 +309,24 @@ section h2 {
   font-weight: 500;
   margin-bottom: 0.1rem;
   border-left: 2px solid transparent;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  transition: background-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
 }
 
 .nav-link svg {
   flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  padding: 3px;
+  box-sizing: content-box;
+  border-radius: 7px;
   opacity: 0.85;
+  transition: background-color 0.12s ease;
 }
 
 .nav-link:hover {
   background: var(--sidebar-hover);
   color: var(--sidebar-text-active);
+  transform: translateX(2px);
 }
 
 .nav-link.active {
@@ -330,6 +338,7 @@ section h2 {
 
 .nav-link.active svg {
   color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
   opacity: 1;
 }
 
@@ -441,10 +450,18 @@ section h2 {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: filter 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .btn-primary:hover {
   filter: brightness(0.92);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-danger {
@@ -456,10 +473,12 @@ section h2 {
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
 .btn-danger:hover {
   background: #fef2f2;
+  border-color: #fca5a5;
 }
 
 .badge {
@@ -523,12 +542,17 @@ section h2 {
   border-bottom: none;
 }
 
+.data-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface));
+}
+
 .data-table tbody tr:hover {
-  background: #fafbfd;
+  background: color-mix(in srgb, var(--accent-soft) 85%, var(--surface));
 }
 
 .data-table th {
   background: #f8f9fc;
+  border-bottom: 2px solid color-mix(in srgb, var(--accent) 35%, var(--border));
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -545,7 +569,7 @@ section h2 {
 .actions-cell a {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.35rem;
   border: 1px solid var(--border);
   background: #fff;
   border-radius: var(--radius-sm);
@@ -555,12 +579,19 @@ section h2 {
   color: var(--text);
   text-decoration: none;
   cursor: pointer;
+  transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
 }
 
-.actions-cell button:hover,
-.actions-cell a:hover {
-  border-color: var(--border-strong);
-  background: #f8f9fc;
+.actions-cell button svg,
+.actions-cell a svg {
+  flex-shrink: 0;
+}
+
+.actions-cell button:not(.btn-danger):hover,
+.actions-cell a:not(.btn-danger):hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 70%, #fff);
 }
 
 .empty-row {

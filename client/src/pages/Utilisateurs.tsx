@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Copy, KeyRound } from "lucide-react";
+import { Plus, Copy, KeyRound, Pencil, Trash2 } from "lucide-react";
 import { apiCreate, apiDelete, apiList, apiUpdate } from "../api";
 import { Badge } from "../components/Badge";
 import { useAuth } from "../auth/AuthContext";
@@ -191,13 +191,15 @@ export function Utilisateurs() {
                       : "—"}
                   </td>
                   <td className="actions-cell">
-                    <button onClick={() => setEditing(u)}>Modifier</button>
-                    <button onClick={() => handleResetPassword(u)}>
+                    <button onClick={() => setEditing(u)}>
+                      <Pencil size={13} /> Modifier
+                    </button>
+                    <button onClick={() => handleResetPassword(u)} title="Réinitialiser le mot de passe">
                       <KeyRound size={13} />
                     </button>
                     {u.id !== moi?.id && (
                       <button className="btn-danger" onClick={() => handleDelete(u)}>
-                        Supprimer
+                        <Trash2 size={13} /> Supprimer
                       </button>
                     )}
                   </td>

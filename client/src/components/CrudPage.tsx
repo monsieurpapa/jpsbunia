@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X, Pencil, Trash2 } from "lucide-react";
 import { apiCreate, apiDelete, apiList, apiUpdate } from "../api";
 import { groupTitleForPath, moduleForPath } from "../config/modules";
 import { Badge } from "./Badge";
@@ -274,9 +274,11 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
                   ))}
                   {canEdit && (
                     <td className="actions-cell">
-                      <button onClick={() => openEdit(row)}>Modifier</button>
+                      <button onClick={() => openEdit(row)}>
+                        <Pencil size={13} /> Modifier
+                      </button>
                       <button className="btn-danger" onClick={() => handleDelete(row)}>
-                        Supprimer
+                        <Trash2 size={13} /> Supprimer
                       </button>
                     </td>
                   )}
