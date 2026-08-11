@@ -20,6 +20,8 @@ export interface FieldConfig {
   optionsLabelKey?: string; // clé du libellé affiché, ex "nom"
   /** Pour type "select" avec valeurs fixes (ex: statut) — affiché comme badge dans le tableau. */
   staticOptions?: { value: string; label: string }[];
+  /** N'affiche ce champ dans le formulaire que si cette fonction retourne true pour les valeurs actuelles. */
+  showIf?: (values: Record<string, any>) => boolean;
 }
 
 interface CrudPageProps {
@@ -120,6 +122,14 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
     // Un champ optionnel laissé vide envoie "" — la base rejette "" pour les
     // colonnes smallint/uuid, il faut transmettre null.
     const payload = { ...editing };
+    // Un champ masqué par showIf (ex: montant non pertinent pour le type
+    // d'opération choisi) revient à sa valeur par défaut plutôt que de
+    // garder une saisie faite avant de changer de type.
+    for (const f of fields) {
+      if (f.showIf && !f.showIf(payload)) {
+        payload[f.key] = f.defaultValue ?? null;
+      }
+    }
     for (const key of Object.keys(payload)) {
       if (payload[key] === "") payload[key] = null;
     }
@@ -302,7 +312,7 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
             <h2>{editing.id ? "Modifier" : "Nouveau"}</h2>
-            {fields.map((f) => (
+            {fields.filter((f) => !f.showIf || f.showIf(editing)).map((f) => (
               <label key={f.key} className="form-field">
                 <span>{f.label}</span>
                 {f.type === "select" ? (

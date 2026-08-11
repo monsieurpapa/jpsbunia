@@ -312,6 +312,7 @@ export const operationsDistribution = pgTable(
     distributeurId: uuid("distributeur_id").references(() => distributeurs.id),
     ville: text("ville"),
     typeOperation: text("type_operation").notNull(),
+    articleAccessoire: text("article_accessoire"),
     description: text("description"),
     canalPaiementId: smallint("canal_paiement_id")
       .notNull()
@@ -334,6 +335,10 @@ export const operationsDistribution = pgTable(
     check(
       "operations_distribution_type_check",
       sql`${t.typeOperation} in ('VENTE_CREDIT_CGA','VENTE_MATERIELS','VENTE_ACCESSOIRES','VENTE_DECODEURS','VENTE_PARABOLES','CREDITATION','APPROVISIONNEMENT','AUTRE')`,
+    ),
+    check(
+      "operations_distribution_article_accessoire_check",
+      sql`${t.articleAccessoire} is null or ${t.articleAccessoire} in ('TELECOMMANDE','ADAPTATEUR','FICHES','CABLE_HDMI','AUTRE')`,
     ),
     check("operations_distribution_statut_check", sql`${t.statut} in ('COMPTANT','CREDIT')`),
     check(

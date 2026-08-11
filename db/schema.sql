@@ -225,6 +225,8 @@ create table operations_distribution (
     distributeur_id             uuid references distributeurs(id),
     ville                       text,                 -- dénormalisé depuis distributeurs.ville, pour le RBAC par ville
     type_operation              text not null check (type_operation in ('VENTE_CREDIT_CGA','VENTE_MATERIELS','VENTE_ACCESSOIRES','VENTE_DECODEURS','VENTE_PARABOLES','CREDITATION','APPROVISIONNEMENT','AUTRE')),
+    -- renseigné seulement quand type_operation = 'VENTE_ACCESSOIRES', pour suivre l'article vendu individuellement
+    article_accessoire          text check (article_accessoire is null or article_accessoire in ('TELECOMMANDE','ADAPTATEUR','FICHES','CABLE_HDMI','AUTRE')),
     description                 text,                 -- ex "CREDITATION REABONNEMENT", "Approvisionnement compte principal"
     canal_paiement_id           smallint not null references canaux_paiement(id),
     montant_creditation         numeric(18,2) not null default 0,
