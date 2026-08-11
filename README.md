@@ -128,3 +128,17 @@ railway domain                         # générer une URL publique
 ```
 
 URL actuelle : https://jps-production-8473.up.railway.app
+
+**Important** : il n'y a pas de fichier de migrations versionné — `db:push`
+(drizzle-kit push) applique le schéma directement. Toute modification de
+`server/src/db/schema.ts` doit donc être répercutée manuellement en
+production avant (ou juste après) le déploiement :
+
+```bash
+DATABASE_URL=<url-production> pnpm --filter jps-server db:push
+```
+
+Oublier cette étape fait planter le serveur en boucle au premier accès à la
+colonne/table manquante (erreur Postgres `column ... does not exist` non
+rattrapée → crash du process → 502), comme observé le 2026-08-11 avec l'ajout
+de `article_accessoire`.
