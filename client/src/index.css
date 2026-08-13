@@ -984,23 +984,26 @@ textarea:focus-visible {
 
 /* ---------------------------------------------------------------------------
    Vue d'impression de facture / proforma
+   Reproduit le modèle papier JPS Dieu Merci : bloc logo + numéro, bloc
+   émetteur/client, tableau des lignes, totaux avec ventilation TVA, et
+   montant en toutes lettres.
    --------------------------------------------------------------------------- */
 
-.invoice-print-screen {
+.facture-print-screen {
   min-height: 100vh;
   background: #eef0f4;
   padding: 2rem 1rem 4rem;
 }
 
-.invoice-toolbar {
-  max-width: 780px;
+.facture-toolbar {
+  max-width: 900px;
   margin: 0 auto 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.invoice-toolbar a {
+.facture-toolbar a {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -1009,175 +1012,281 @@ textarea:focus-visible {
   font-size: 0.85rem;
 }
 
-.invoice-toolbar a:hover {
+.facture-toolbar a:hover {
   color: var(--text);
 }
 
-.invoice-print-page {
-  max-width: 780px;
+.facture-page {
+  max-width: 900px;
   margin: 0 auto;
   background: #fff;
   color: #111827;
-  padding: 3rem;
+  padding: 1.5rem;
   box-shadow: var(--shadow-modal);
   border-radius: var(--radius-md);
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.invoice-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid #111827;
-  margin-bottom: 1.5rem;
-}
-
-.invoice-entreprise {
   font-size: 0.82rem;
-  color: #374151;
+  line-height: 1.4;
+  border: 1px solid #9ca3af;
 }
 
-.invoice-logo {
-  height: 48px;
+/* --- bloc supérieur : logo + numéro de facture + date -------------------- */
+
+.facture-topbox {
+  display: flex;
+  border: 1px solid #111827;
+  margin-bottom: 0.9rem;
+}
+
+.facture-logo-cell {
+  flex: 0 0 34%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border-right: 1px solid #111827;
+}
+
+.facture-logo {
+  max-width: 100%;
+  max-height: 70px;
   width: auto;
   display: block;
-  margin-bottom: 0.5rem;
 }
 
-.invoice-entreprise-nom {
-  font-size: 1.1rem;
+.facture-title-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.facture-title-bar {
+  background: #e5e7eb;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #111827;
+  padding: 0.9rem 1rem;
+}
+
+.facture-date-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-top: 1px solid #111827;
+  padding: 0.5rem 1rem;
+}
+
+.facture-date-label {
+  font-weight: 700;
+}
+
+.facture-date-value {
+  font-weight: 700;
+}
+
+/* --- bloc émetteur / client ----------------------------------------------- */
+
+.facture-parties {
+  display: flex;
+  border: 1px solid #111827;
+  margin-bottom: 0.9rem;
+}
+
+.facture-partie {
+  flex: 1;
+  padding: 0.65rem 0.9rem;
+}
+
+.facture-partie:first-child {
+  border-right: 1px solid #111827;
+}
+
+.facture-partie-titre {
   font-weight: 800;
   color: #111827;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
 }
 
-.invoice-meta {
-  text-align: right;
-  font-size: 0.82rem;
-  color: #374151;
+.facture-partie-ligne {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 0.5rem;
+  padding: 0.05rem 0;
 }
 
-.invoice-titre {
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #111827;
+.facture-partie-titre-ligne {
+  align-items: baseline;
+  margin-bottom: 0.15rem;
 }
 
-.invoice-numero {
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.invoice-client {
-  margin-bottom: 1.75rem;
-  font-size: 0.85rem;
-  color: #374151;
-}
-
-.invoice-section-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #9ca3af;
-  margin-bottom: 0.3rem;
-}
-
-.invoice-client-nom {
+.facture-label {
   font-weight: 700;
   color: #111827;
-  font-size: 0.95rem;
 }
 
-.invoice-lignes {
+/* --- tableau des lignes --------------------------------------------------- */
+
+.facture-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 1.5rem;
-  font-size: 0.85rem;
+  margin-bottom: 0.9rem;
+  font-size: 0.8rem;
 }
 
-.invoice-lignes th {
+.facture-table th {
   text-align: left;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  border-bottom: 1px solid #111827;
-  padding: 0.5rem 0.4rem;
+  font-weight: 700;
+  color: #111827;
+  background: #e5e7eb;
+  border: 1px solid #111827;
+  padding: 0.4rem 0.5rem;
 }
 
-.invoice-lignes td {
-  padding: 0.55rem 0.4rem;
+.facture-table td {
+  padding: 0.4rem 0.5rem;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
   border-bottom: 1px solid #e5e7eb;
   color: #1f2937;
 }
 
-.invoice-lignes .num,
-.invoice-lignes th.num {
+.facture-table .num,
+.facture-table th.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.invoice-totaux {
-  margin-left: auto;
-  width: 280px;
-  font-size: 0.88rem;
-  margin-bottom: 1.75rem;
+/* --- pied : échéance/règlement + totaux ----------------------------------- */
+
+.facture-bottom {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 0.9rem;
 }
 
-.invoice-totaux > div {
+.facture-bas-gauche {
+  flex: 1;
+  max-width: 320px;
+}
+
+.facture-bas-ligne {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0;
+}
+
+.facture-bas-ligne > span:first-child {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.facture-reglement-valeur {
+  flex: 1;
+  background: #e5e7eb;
+  padding: 0.4rem 0.6rem;
+  font-weight: 700;
+  text-align: center;
+  min-height: 1.4em;
+}
+
+.facture-totaux-bloc {
+  flex: 0 0 320px;
+}
+
+.facture-totaux {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #111827;
+  font-size: 0.82rem;
+}
+
+.facture-totaux td {
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid #d1d5db;
+  color: #1f2937;
+}
+
+.facture-totaux tr:first-child td {
+  font-weight: 700;
+}
+
+.facture-totaux tr:last-child td {
+  border-bottom: none;
+}
+
+.facture-totaux-tva-label {
+  font-style: italic;
+}
+
+.facture-totaux .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.facture-total-ttc {
   display: flex;
   justify-content: space-between;
-  padding: 0.3rem 0;
-  color: #374151;
-}
-
-.invoice-total-ttc {
-  border-top: 2px solid #111827;
-  margin-top: 0.3rem;
-  padding-top: 0.5rem !important;
+  align-items: center;
+  gap: 1rem;
+  border: 2px solid #111827;
+  border-top: none;
+  padding: 0.55rem 0.6rem;
   font-weight: 800;
   font-size: 1.05rem;
   color: #111827;
 }
 
-.invoice-paiement {
-  font-size: 0.8rem;
-  color: #4b5563;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 1rem;
-  margin-bottom: 1rem;
+/* --- montant en toutes lettres -------------------------------------------- */
+
+.facture-lettres {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  border-top: 1px solid #d1d5db;
+  padding-top: 0.7rem;
 }
 
-.invoice-footer {
-  text-align: center;
-  font-size: 0.85rem;
+.facture-lettres-label {
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.facture-lettres-mots {
   font-style: italic;
-  color: #6b7280;
+  font-weight: 700;
+  color: #111827;
+}
+
+.facture-lettres-devise {
+  font-style: italic;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
 }
 
 @media print {
   @page {
     size: A4;
-    margin: 15mm;
+    margin: 12mm;
   }
 
   .no-print {
     display: none !important;
   }
 
-  .invoice-print-screen {
+  .facture-print-screen {
     background: #fff;
     padding: 0;
     min-height: 0;
   }
 
-  .invoice-print-page {
+  .facture-page {
     box-shadow: none;
     border-radius: 0;
     max-width: none;
@@ -1249,10 +1358,31 @@ html, body {
 }
 
 @media (max-width: 640px) {
-  .invoice-toolbar {
+  .facture-toolbar {
     flex-direction: column;
     align-items: stretch;
     gap: 0.6rem;
+  }
+
+  .facture-topbox,
+  .facture-parties,
+  .facture-bottom {
+    flex-direction: column;
+  }
+
+  .facture-logo-cell {
+    border-right: none;
+    border-bottom: 1px solid #111827;
+  }
+
+  .facture-partie:first-child {
+    border-right: none;
+    border-bottom: 1px solid #111827;
+  }
+
+  .facture-totaux-bloc {
+    flex: 1 1 auto;
+    max-width: none;
   }
 
   .modal {

@@ -66,7 +66,6 @@ export function Factures() {
   const [typeFilter, setTypeFilter] = useState("");
   const [statutFilter, setStatutFilter] = useState("");
 
-  const [numero, setNumero] = useState("");
   const [type, setType] = useState("FACTURE");
   const [clientId, setClientId] = useState("");
   const [dateFacture, setDateFacture] = useState("");
@@ -115,7 +114,6 @@ export function Factures() {
     setError(null);
     try {
       await apiCreate("factures", {
-        numero,
         type,
         clientId,
         dateFacture,
@@ -131,7 +129,6 @@ export function Factures() {
           })),
       });
       setShowForm(false);
-      setNumero("");
       setClientId("");
       setDateFacture("");
       setLignes([{ ...LIGNE_VIDE }]);
@@ -275,11 +272,9 @@ export function Factures() {
           <form className="modal modal-wide" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
             <h2>Nouvelle facture</h2>
 
+            <p className="stat-helper">Le numéro de facture est généré automatiquement à l'enregistrement.</p>
+
             <div className="form-grid">
-              <label className="form-field">
-                <span>Numéro</span>
-                <input required value={numero} onChange={(e) => setNumero(e.target.value)} />
-              </label>
               <label className="form-field">
                 <span>Type</span>
                 <select value={type} onChange={(e) => setType(e.target.value)}>
