@@ -19,6 +19,18 @@ dashboardRouter.get("/chiffre-affaires-mensuel", async (_req, res) => {
   res.json(rows);
 });
 
+dashboardRouter.get("/solde-caisse-banque", async (_req, res) => {
+  const rows = await db.execute(
+    sql`select * from v_solde_caisse_banque order by canal_libelle, devise`,
+  );
+  res.json(rows);
+});
+
+dashboardRouter.get("/depenses-mensuelles", async (_req, res) => {
+  const rows = await db.execute(sql`select * from v_depenses_mensuelles order by mois desc`);
+  res.json(rows);
+});
+
 dashboardRouter.get("/dettes-distributeurs", async (_req, res) => {
   const rows = await db.execute(sql`select * from v_dettes_distributeurs order by solde_du desc`);
   // Le plafond de crédit est négocié en USD (cf. réponses du client) — il ne peut être

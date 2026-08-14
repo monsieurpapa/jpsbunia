@@ -29,6 +29,50 @@ join lignes_facture lf on lf.facture_id = f.id
 where f.type = 'FACTURE' and f.statut <> 'ANNULEE'
 group by 1, 2;
 
+-- Solde courant (toutes dates confondues) par canal de paiement et devise —
+-- la "situation caisse / banque" : ce qui reste réellement disponible sur
+-- chaque canal, par opposition à v_synthese_journaliere qui ne donne que le
+-- mouvement d'une journée donnée.
+create or replace view v_solde_caisse_banque as
+select
+    c.id as canal_paiement_id,
+    c.code as canal_code,
+    c.libelle as canal_libelle,
+    m.devise,
+    sum(case when m.sens = 'ENTREE' then m.montant else -m.montant end) as solde
+from mouvements_caisse m
+join canaux_paiement c on c.id = m.canal_paiement_id
+group by c.id, c.code, c.libelle, m.devise;
+
+-- Dépenses réellement réalisées (décaissées), par mois et devise — le
+-- personnel n'est compté que lorsqu'il est payé (statut PAYE, sur le mois de
+-- date_paiement) ; le fonctionnement n'a pas de statut, chaque ligne est déjà
+-- une dépense engagée (sur le mois de date_depense).
+create or replace view v_depenses_mensuelles as
+select
+    mois,
+    devise,
+    sum(montant_personnel) as montant_personnel,
+    sum(montant_fonctionnement) as montant_fonctionnement,
+    sum(montant_personnel) + sum(montant_fonctionnement) as montant_total
+from (
+    select
+        date_trunc('month', date_paiement)::date as mois,
+        devise,
+        montant as montant_personnel,
+        0 as montant_fonctionnement
+    from depenses_personnel
+    where statut = 'PAYE' and date_paiement is not null
+    union all
+    select
+        date_trunc('month', date_depense)::date as mois,
+        devise,
+        0 as montant_personnel,
+        montant as montant_fonctionnement
+    from depenses_fonctionnement
+) t
+group by mois, devise;
+
 create or replace view v_dettes_distributeurs as
 select
     d.id as distributeur_id,

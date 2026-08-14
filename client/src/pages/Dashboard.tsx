@@ -22,6 +22,39 @@ interface SyntheseJournaliere {
 interface SoldeStock {
   stock_actuel: string | null;
 }
+interface SoldeCaisseBanque {
+  canal_paiement_id: number;
+  canal_code: string;
+  canal_libelle: string;
+  devise: string;
+  solde: string;
+}
+interface DepenseMensuelle {
+  mois: string;
+  devise: string;
+  montant_personnel: string;
+  montant_fonctionnement: string;
+  montant_total: string;
+}
+
+// Regroupement visuel des canaux de paiement pour la "situation caisse /
+// banque" — codes définis dans server/src/db/seed.ts.
+const CATEGORIE_CANAL: Record<string, string> = {
+  CASH: "Caisse (espèces)",
+  MPESA: "Mobile Money",
+  AIRTELMONEY: "Mobile Money",
+  ORANGEMONEY: "Mobile Money",
+  EQUITY: "Banque",
+  TMB: "Banque",
+  RAWBANK: "Banque",
+  CADECO: "Banque",
+  VIREMENT: "Banque",
+  CHEQUE: "Banque",
+  CARTE: "Banque",
+};
+function categorieCanal(code: string) {
+  return CATEGORIE_CANAL[code] ?? "Autre";
+}
 
 const QUICK_ACTIONS: { to: string; label: string; icon: typeof FilePlus2; color: string; module: Module }[] = [
   { to: "/factures", label: "Nouvelle facture", icon: FilePlus2, color: MODULE_COLOR_HEX.blue, module: "facturation" },
@@ -34,10 +67,14 @@ export function Dashboard() {
   const [ca, setCa] = useState<CaMensuel[]>([]);
   const [synthese, setSynthese] = useState<SyntheseJournaliere[]>([]);
   const [stock, setStock] = useState<SoldeStock | null>(null);
+  const [soldeCaisseBanque, setSoldeCaisseBanque] = useState<SoldeCaisseBanque[]>([]);
+  const [depensesMensuelles, setDepensesMensuelles] = useState<DepenseMensuelle[]>([]);
   const [clientCount, setClientCount] = useState<number | null>(null);
   const [factureCount, setFactureCount] = useState<number | null>(null);
 
   const { user } = useAuth();
+  const peutVoirTresorerie = !!user && canAccess(user.role, "tresorerie");
+  const peutVoirDepenses = !!user && canAccess(user.role, "personnel");
 
   useEffect(() => {
     apiList("dashboard/chiffre-affaires-mensuel").then(setCa);
@@ -47,6 +84,13 @@ export function Dashboard() {
       apiList("clients").then((rows) => setClientCount(rows.length));
       apiList("factures").then((rows) => setFactureCount(rows.length));
     }
+    if (peutVoirTresorerie) {
+      apiList("dashboard/solde-caisse-banque").then(setSoldeCaisseBanque);
+    }
+    if (peutVoirDepenses) {
+      apiList("dashboard/depenses-mensuelles").then(setDepensesMensuelles);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const totalCaHt = ca.reduce((sum, row) => sum + Number(row.chiffre_affaires_ht || 0), 0);
@@ -172,6 +216,74 @@ export function Dashboard() {
           </table>
         </div>
       </section>
+
+      {peutVoirTresorerie && (
+        <section>
+          <h2>Situation caisse &amp; banque</h2>
+          <div className="table-card">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Catégorie</th>
+                  <th>Canal</th>
+                  <th>Devise</th>
+                  <th>Solde actuel</th>
+                </tr>
+              </thead>
+              <tbody>
+                {soldeCaisseBanque.map((row) => (
+                  <tr key={`${row.canal_paiement_id}-${row.devise}`}>
+                    <td>{categorieCanal(row.canal_code)}</td>
+                    <td>{row.canal_libelle}</td>
+                    <td>{row.devise}</td>
+                    <td>{Number(row.solde).toLocaleString("fr-FR")}</td>
+                  </tr>
+                ))}
+                {soldeCaisseBanque.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="empty-row">Aucun mouvement de caisse pour l'instant.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {peutVoirDepenses && (
+        <section>
+          <h2>Dépenses réalisées</h2>
+          <div className="table-card">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Mois</th>
+                  <th>Devise</th>
+                  <th>Personnel</th>
+                  <th>Fonctionnement</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {depensesMensuelles.map((row, i) => (
+                  <tr key={i}>
+                    <td>{new Date(row.mois).toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}</td>
+                    <td>{row.devise}</td>
+                    <td>{Number(row.montant_personnel).toLocaleString("fr-FR")}</td>
+                    <td>{Number(row.montant_fonctionnement).toLocaleString("fr-FR")}</td>
+                    <td>{Number(row.montant_total).toLocaleString("fr-FR")}</td>
+                  </tr>
+                ))}
+                {depensesMensuelles.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="empty-row">Aucune dépense réalisée pour l'instant.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
