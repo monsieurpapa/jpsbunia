@@ -10,6 +10,7 @@ import { Login } from "./pages/Login";
 import { ChangePassword } from "./pages/ChangePassword";
 import { Utilisateurs } from "./pages/Utilisateurs";
 import { FacturePrint } from "./pages/FacturePrint";
+import { BonLivraisonPrint } from "./pages/BonLivraisonPrint";
 import { DettesDistributeurs } from "./pages/DettesDistributeurs";
 import {
   clientsFields,
@@ -37,6 +38,7 @@ export default function App() {
           <Route element={<RequireAuth />}>
             <Route path="/changer-mot-de-passe" element={<ChangePassword />} />
             <Route path="/factures/:id/imprimer" element={<FacturePrint />} />
+            <Route path="/bons-livraison/:id/imprimer" element={<BonLivraisonPrint />} />
 
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
@@ -96,6 +98,7 @@ export default function App() {
                       resource="bons-livraison"
                       title="Bons de livraison"
                       fields={bonsLivraisonFields}
+                      printPath="/bons-livraison"
                     />
                   </ModuleGate>
                 }

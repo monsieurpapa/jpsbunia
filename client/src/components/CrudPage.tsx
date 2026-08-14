@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { Plus, Search, X, Pencil, Trash2 } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Plus, Search, X, Pencil, Trash2, Printer } from "lucide-react";
 import { apiCreate, apiDelete, apiList, apiUpdate } from "../api";
 import { groupTitleForPath, moduleForPath } from "../config/modules";
 import { Badge } from "./Badge";
@@ -30,11 +30,13 @@ interface CrudPageProps {
   fields: FieldConfig[];
   /** Colonnes affichées dans le tableau ; par défaut les mêmes clés que fields. */
   columns?: { key: string; label: string }[];
+  /** Si fourni, ajoute un lien "Imprimer" par ligne vers `${printPath}/${row.id}/imprimer` (nouvel onglet). */
+  printPath?: string;
 }
 
 type Row = Record<string, any>;
 
-export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
+export function CrudPage({ resource, title, fields, columns, printPath }: CrudPageProps) {
   const location = useLocation();
   const [rows, setRows] = useState<Row[]>([]);
   const [optionsByResource, setOptionsByResource] = useState<Record<string, Row[]>>({});
@@ -273,7 +275,7 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
                 {displayColumns.map((c) => (
                   <th key={c.key}>{c.label}</th>
                 ))}
-                {canEdit && <th></th>}
+                {(canEdit || printPath) && <th></th>}
               </tr>
             </thead>
             <tbody>
@@ -282,21 +284,30 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
                   {displayColumns.map((c) => (
                     <td key={c.key}>{renderCell(row, c.key)}</td>
                   ))}
-                  {canEdit && (
+                  {(canEdit || printPath) && (
                     <td className="actions-cell">
-                      <button onClick={() => openEdit(row)}>
-                        <Pencil size={13} /> Modifier
-                      </button>
-                      <button className="btn-danger" onClick={() => handleDelete(row)}>
-                        <Trash2 size={13} /> Supprimer
-                      </button>
+                      {printPath && (
+                        <Link to={`${printPath}/${row.id}/imprimer`} target="_blank" rel="noopener noreferrer">
+                          <Printer size={13} /> Imprimer
+                        </Link>
+                      )}
+                      {canEdit && (
+                        <>
+                          <button onClick={() => openEdit(row)}>
+                            <Pencil size={13} /> Modifier
+                          </button>
+                          <button className="btn-danger" onClick={() => handleDelete(row)}>
+                            <Trash2 size={13} /> Supprimer
+                          </button>
+                        </>
+                      )}
                     </td>
                   )}
                 </tr>
               ))}
               {filteredRows.length === 0 && (
                 <tr>
-                  <td colSpan={displayColumns.length + (canEdit ? 1 : 0)} className="empty-row">
+                  <td colSpan={displayColumns.length + (canEdit || printPath ? 1 : 0)} className="empty-row">
                     {rows.length === 0
                       ? "Aucune donnée pour l'instant."
                       : "Aucun résultat pour cette recherche."}
