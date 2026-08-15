@@ -465,15 +465,24 @@ export const bonsLivraison = pgTable(
 // livrée), sur le même modèle que lignes_facture — reproduit le tableau du
 // modèle papier ("Votre commande du : ..."). descriptionMarchandise/poidsKg
 // restent sur bonsLivraison pour les bons créés avant l'ajout de ce tableau.
-export const lignesBonLivraison = pgTable("lignes_bon_livraison", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  bonLivraisonId: uuid("bon_livraison_id")
-    .notNull()
-    .references(() => bonsLivraison.id, { onDelete: "cascade" }),
-  reference: text("reference"),
-  description: text("description").notNull(),
-  quantiteCommandee: numeric("quantite_commandee", { precision: 18, scale: 3 }).notNull().default("1"),
-  quantiteLivree: numeric("quantite_livree", { precision: 18, scale: 3 }),
-  observation: text("observation"),
-  ordre: smallint("ordre").notNull().default(0),
-});
+export const lignesBonLivraison = pgTable(
+  "lignes_bon_livraison",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bonLivraisonId: uuid("bon_livraison_id")
+      .notNull()
+      .references(() => bonsLivraison.id, { onDelete: "cascade" }),
+    reference: text("reference"),
+    description: text("description").notNull(),
+    quantiteCommandee: numeric("quantite_commandee", { precision: 18, scale: 3 }).notNull().default("1"),
+    quantiteLivree: numeric("quantite_livree", { precision: 18, scale: 3 }),
+    observation: text("observation"),
+    ordre: smallint("ordre").notNull().default(0),
+  },
+  (t) => [
+    check(
+      "lignes_bon_livraison_quantite_livree_check",
+      sql`${t.quantiteLivree} is null or ${t.quantiteLivree} <= ${t.quantiteCommandee}`,
+    ),
+  ],
+);

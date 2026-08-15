@@ -313,6 +313,20 @@ create table bons_livraison (
     cree_le                 timestamptz not null default now()
 );
 
+-- Lignes d'un bon de livraison (référence/description/quantité commandée vs
+-- livrée), sur le même modèle que lignes_facture.
+create table lignes_bon_livraison (
+    id                  uuid primary key default gen_random_uuid(),
+    bon_livraison_id    uuid not null references bons_livraison(id) on delete cascade,
+    reference           text,
+    description         text not null,
+    quantite_commandee  numeric(18,3) not null default 1,
+    quantite_livree     numeric(18,3)
+                        check (quantite_livree is null or quantite_livree <= quantite_commandee),
+    observation         text,
+    ordre               smallint not null default 0
+);
+
 -- ============================================================================
 -- VUES — remplacent les feuilles récapitulatives recalculées à la main
 -- ============================================================================
