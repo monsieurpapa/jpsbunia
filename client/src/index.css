@@ -594,6 +594,11 @@ section h2 {
   background: color-mix(in srgb, var(--accent-soft) 70%, #fff);
 }
 
+.actions-cell .btn-icon {
+  gap: 0;
+  padding: 0.32rem;
+}
+
 .empty-row {
   text-align: center;
   color: var(--text-muted);

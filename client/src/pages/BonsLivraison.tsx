@@ -282,8 +282,15 @@ export function BonsLivraison() {
                 <td>{b.villeDepart} → {b.villeArrivee}</td>
                 <td><Badge value={b.statut} /></td>
                 <td className="actions-cell">
-                  <Link to={`/bons-livraison/${b.id}/imprimer`} target="_blank" rel="noopener noreferrer">
-                    <Printer size={13} /> Imprimer
+                  <Link
+                    to={`/bons-livraison/${b.id}/imprimer`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-icon"
+                    title="Imprimer"
+                    aria-label="Imprimer"
+                  >
+                    <Printer size={13} />
                   </Link>
                   {canEdit && (
                     <>
