@@ -104,14 +104,19 @@ export function BonLivraisonPrint() {
 
       <div className="bl-page">
         <div className="bl-topbox">
-          <div className="bl-title-bar">BON DE LIVRAISON {bon.numero ? `N° ${bon.numero}` : ""}</div>
-          <div className="bl-date-row">
-            <span className="bl-date-item">
-              <span className="bl-label">Date d'expédition :</span> {formatDate(bon.dateExpedition)}
-            </span>
-            <span className="bl-date-item">
-              <span className="bl-label">Statut :</span> {STATUT_LABELS[bon.statut] ?? bon.statut}
-            </span>
+          <div className="bl-logo-cell">
+            <img src="/logo-jps.png" alt="" className="bl-logo" />
+          </div>
+          <div className="bl-title-cell">
+            <div className="bl-title-bar">BON DE LIVRAISON {bon.numero ? `N° ${bon.numero}` : ""}</div>
+            <div className="bl-date-row">
+              <span className="bl-date-item">
+                <span className="bl-label">Date d'expédition :</span> {formatDate(bon.dateExpedition)}
+              </span>
+              <span className="bl-date-item">
+                <span className="bl-label">Statut :</span> {STATUT_LABELS[bon.statut] ?? bon.statut}
+              </span>
+            </div>
           </div>
         </div>
 
