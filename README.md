@@ -130,15 +130,21 @@ railway domain                         # générer une URL publique
 URL actuelle : https://jps-production-8473.up.railway.app
 
 **Important** : il n'y a pas de fichier de migrations versionné — `db:push`
-(drizzle-kit push) applique le schéma directement. Toute modification de
-`server/src/db/schema.ts` doit donc être répercutée manuellement en
-production avant (ou juste après) le déploiement :
+(drizzle-kit push) applique le schéma directement, et enchaîne automatiquement
+avec `server/src/db/apply-views.ts` (qui rejoue `views.sql` — drizzle-kit ne
+gère pas les vues). Toute modification de `server/src/db/schema.ts` ou de
+`views.sql` doit donc être répercutée manuellement en production avant (ou
+juste après) le déploiement :
 
 ```bash
 DATABASE_URL=<url-production> pnpm --filter jps-server db:push
 ```
 
+(Pour ne rejouer que les vues sans toucher au schéma : `pnpm --filter
+jps-server db:views`.)
+
 Oublier cette étape fait planter le serveur en boucle au premier accès à la
-colonne/table manquante (erreur Postgres `column ... does not exist` non
+colonne/table/vue manquante (erreur Postgres `... does not exist` non
 rattrapée → crash du process → 502), comme observé le 2026-08-11 avec l'ajout
-de `article_accessoire`.
+de `article_accessoire`, et le 2026-08-15 avec les vues `v_solde_caisse_banque`
+/ `v_depenses_mensuelles`.
