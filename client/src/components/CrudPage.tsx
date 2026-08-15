@@ -22,6 +22,17 @@ export interface FieldConfig {
   staticOptions?: { value: string; label: string }[];
   /** N'affiche ce champ dans le formulaire que si cette fonction retourne true pour les valeurs actuelles. */
   showIf?: (values: Record<string, any>) => boolean;
+  /**
+   * Recalcule automatiquement la valeur de ce champ à partir des autres
+   * valeurs du formulaire (et des ressources liées, ex. salaire de base d'un
+   * employé) à chaque changement d'un AUTRE champ. Retourner `undefined` ne
+   * touche pas à la valeur actuelle. Ne s'applique jamais quand l'utilisateur
+   * modifie ce champ lui-même — une valeur calculée reste toujours modifiable
+   * à la main ensuite.
+   */
+  computeValue?: (values: Record<string, any>, optionsByResource: Record<string, Row[]>) => unknown;
+  /** Texte d'aide affiché sous le champ, ex. pour expliquer un calcul automatique. */
+  helperText?: (values: Record<string, any>, optionsByResource: Record<string, Row[]>) => string | null;
 }
 
 interface CrudPageProps {
@@ -105,6 +116,24 @@ export function CrudPage({ resource, title, fields, columns, printPath }: CrudPa
   function openEdit(row: Row) {
     setEditing({ ...row });
     setShowForm(true);
+  }
+
+  /**
+   * Met à jour un champ, puis recalcule tous les champs `computeValue` (sauf
+   * celui qu'on vient de modifier directement — une saisie manuelle n'est
+   * jamais écrasée par son propre calcul).
+   */
+  function updateField(key: string, value: unknown) {
+    setEditing((prev) => {
+      if (!prev) return prev;
+      let next: Row = { ...prev, [key]: value };
+      for (const f of fields) {
+        if (f.key === key || !f.computeValue) continue;
+        const computed = f.computeValue(next, optionsByResource);
+        if (computed !== undefined) next = { ...next, [f.key]: computed };
+      }
+      return next;
+    });
   }
 
   async function handleDelete(row: Row) {
@@ -323,50 +352,54 @@ export function CrudPage({ resource, title, fields, columns, printPath }: CrudPa
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
             <h2>{editing.id ? "Modifier" : "Nouveau"}</h2>
-            {fields.filter((f) => !f.showIf || f.showIf(editing)).map((f) => (
-              <label key={f.key} className="form-field">
-                <span>{f.label}</span>
-                {f.type === "select" ? (
-                  <select
-                    required={f.required}
-                    value={editing[f.key] ?? ""}
-                    onChange={(e) => setEditing({ ...editing, [f.key]: e.target.value })}
-                  >
-                    <option value="">—</option>
-                    {(f.staticOptions ??
-                      (optionsByResource[f.optionsResource ?? ""] ?? []).map((o) => ({
-                        value: o.id,
-                        label: o[f.optionsLabelKey ?? "nom"],
-                      }))
-                    ).map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                ) : f.type === "checkbox" ? (
-                  <input
-                    type="checkbox"
-                    checked={!!editing[f.key]}
-                    onChange={(e) => setEditing({ ...editing, [f.key]: e.target.checked })}
-                  />
-                ) : f.type === "textarea" ? (
-                  <textarea
-                    required={f.required}
-                    value={editing[f.key] ?? ""}
-                    onChange={(e) => setEditing({ ...editing, [f.key]: e.target.value })}
-                  />
-                ) : (
-                  <input
-                    type={f.type}
-                    step={f.type === "number" ? "0.01" : undefined}
-                    required={f.required}
-                    value={editing[f.key] ?? ""}
-                    onChange={(e) => setEditing({ ...editing, [f.key]: e.target.value })}
-                  />
-                )}
-              </label>
-            ))}
+            {fields.filter((f) => !f.showIf || f.showIf(editing)).map((f) => {
+              const helper = f.helperText?.(editing, optionsByResource) ?? null;
+              return (
+                <label key={f.key} className="form-field">
+                  <span>{f.label}</span>
+                  {f.type === "select" ? (
+                    <select
+                      required={f.required}
+                      value={editing[f.key] ?? ""}
+                      onChange={(e) => updateField(f.key, e.target.value)}
+                    >
+                      <option value="">—</option>
+                      {(f.staticOptions ??
+                        (optionsByResource[f.optionsResource ?? ""] ?? []).map((o) => ({
+                          value: o.id,
+                          label: o[f.optionsLabelKey ?? "nom"],
+                        }))
+                      ).map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : f.type === "checkbox" ? (
+                    <input
+                      type="checkbox"
+                      checked={!!editing[f.key]}
+                      onChange={(e) => updateField(f.key, e.target.checked)}
+                    />
+                  ) : f.type === "textarea" ? (
+                    <textarea
+                      required={f.required}
+                      value={editing[f.key] ?? ""}
+                      onChange={(e) => updateField(f.key, e.target.value)}
+                    />
+                  ) : (
+                    <input
+                      type={f.type}
+                      step={f.type === "number" ? "0.01" : undefined}
+                      required={f.required}
+                      value={editing[f.key] ?? ""}
+                      onChange={(e) => updateField(f.key, e.target.value)}
+                    />
+                  )}
+                  {helper && <span className="form-field-helper">{helper}</span>}
+                </label>
+              );
+            })}
             <div className="modal-actions">
               <button type="button" onClick={() => setShowForm(false)}>
                 Annuler

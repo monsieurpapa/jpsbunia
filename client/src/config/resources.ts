@@ -248,7 +248,30 @@ export const depensesPersonnelFields: FieldConfig[] = [
   },
   { key: "moisConcerne", label: "Mois concerné", type: "date", required: true },
   { key: "pourcentagePrime", label: "Si prime : % du salaire de base (ex. 0.25 = 25%)", type: "number" },
-  { key: "montant", label: "Montant", type: "number", required: true },
+  {
+    key: "montant",
+    label: "Montant",
+    type: "number",
+    required: true,
+    computeValue: (values, optionsByResource) => {
+      if (values.typeDepense !== "PRIME") return undefined;
+      const pct = Number(values.pourcentagePrime);
+      if (!pct) return undefined;
+      const employe = (optionsByResource["employes"] ?? []).find((e) => e.id === values.employeId);
+      const base = Number(employe?.salaireBase);
+      if (!base) return undefined;
+      return Math.round(base * pct * 100) / 100;
+    },
+    helperText: (values, optionsByResource) => {
+      if (values.typeDepense !== "PRIME") return null;
+      const pct = Number(values.pourcentagePrime);
+      if (!pct) return null;
+      const employe = (optionsByResource["employes"] ?? []).find((e) => e.id === values.employeId);
+      const base = Number(employe?.salaireBase);
+      if (!base) return null;
+      return `Calculé automatiquement : ${pct * 100}% × ${base} (salaire de base) = ${(base * pct).toFixed(2)}`;
+    },
+  },
   { key: "devise", label: "Devise", type: "select", required: true, staticOptions: DEVISE_OPTIONS },
   { key: "datePaiement", label: "Date de paiement", type: "date" },
   {
