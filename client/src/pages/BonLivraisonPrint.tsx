@@ -7,69 +7,57 @@ interface Entreprise {
   nom: string;
   adresse: string | null;
   telephone: string | null;
+  nImpot: string | null;
+  idNational: string | null;
+  rccm: string | null;
+  coordonneesBancaires: string | null;
 }
 interface Client {
-  id: string;
   nom: string;
   adresse: string | null;
   ville: string | null;
   telephone: string | null;
+  code: string | null;
+  nImpot: string | null;
+  idNational: string | null;
+  rccm: string | null;
 }
-interface Vehicule {
+interface Ligne {
   id: string;
-  immatriculation: string | null;
-  typeVehicule: string | null;
-}
-interface Employe {
-  id: string;
-  nom: string;
-  telephone: string | null;
+  reference: string | null;
+  description: string;
+  quantiteCommandee: string;
+  quantiteLivree: string | null;
+  observation: string | null;
 }
 interface BonLivraison {
   id: string;
   numero: string | null;
   dateExpedition: string;
-  villeDepart: string;
-  villeArrivee: string;
-  vehiculeId: string | null;
-  chauffeurId: string | null;
-  clientId: string | null;
-  descriptionMarchandise: string | null;
-  poidsKg: string | null;
-  statut: string;
-  nomSignataire: string | null;
-  dateLivraison: string | null;
-  signe: boolean;
-  observation: string | null;
+  client: Client | null;
+  lignes: Ligne[];
 }
-
-const STATUT_LABELS: Record<string, string> = {
-  EN_COURS: "En cours",
-  LIVRE: "Livré",
-  ANNULE: "Annulé",
-};
 
 function formatDate(iso: string) {
   const d = new Date(iso);
   return `${d.getUTCDate()}/${d.getUTCMonth() + 1}/${d.getUTCFullYear()}`;
 }
 
+function formatQuantite(v: string | null) {
+  if (v == null) return "";
+  return Number(v).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 3 });
+}
+
 export function BonLivraisonPrint() {
   const { id } = useParams<{ id: string }>();
   const [bon, setBon] = useState<BonLivraison | null>(null);
   const [entreprise, setEntreprise] = useState<Entreprise | null>(null);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [vehicules, setVehicules] = useState<Vehicule[]>([]);
-  const [employes, setEmployes] = useState<Employe[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     apiGet("bons-livraison", id).then(setBon).catch((err) => setError(err.message));
     apiList("entreprise").then(setEntreprise);
-    apiList("clients").then(setClients).catch(() => {});
-    apiList("vehicules").then(setVehicules).catch(() => {});
-    apiList("employes").then(setEmployes).catch(() => {});
   }, [id]);
 
   if (error) {
@@ -86,10 +74,6 @@ export function BonLivraisonPrint() {
       </div>
     );
   }
-
-  const client = clients.find((c) => c.id === bon.clientId) ?? null;
-  const vehicule = vehicules.find((v) => v.id === bon.vehiculeId) ?? null;
-  const chauffeur = employes.find((e) => e.id === bon.chauffeurId) ?? null;
 
   return (
     <div className="bl-print-screen">
@@ -108,98 +92,119 @@ export function BonLivraisonPrint() {
             <img src="/logo-jps.png" alt="" className="bl-logo" />
           </div>
           <div className="bl-title-cell">
-            <div className="bl-title-bar">BON DE LIVRAISON {bon.numero ? `N° ${bon.numero}` : ""}</div>
-            <div className="bl-date-row">
-              <span className="bl-date-item">
-                <span className="bl-label">Date d'expédition :</span> {formatDate(bon.dateExpedition)}
-              </span>
-              <span className="bl-date-item">
-                <span className="bl-label">Statut :</span> {STATUT_LABELS[bon.statut] ?? bon.statut}
-              </span>
+            <div className="bl-title-row">
+              <span>BON DE LIVRAISON N°</span>
+              <span className="bl-numero-badge">{bon.numero ?? "—"}</span>
+            </div>
+            <div className="bl-date-row-plain">
+              <span className="bl-label">Date :</span> {formatDate(bon.dateExpedition)}
             </div>
           </div>
         </div>
 
-        <div className="bl-parties">
-          <div className="bl-partie">
-            <div className="bl-partie-titre">Expéditeur</div>
-            <div className="bl-partie-nom">{entreprise?.nom ?? "—"}</div>
-            {entreprise?.adresse && <div>{entreprise.adresse}</div>}
-            {entreprise?.telephone && <div>Tél : {entreprise.telephone}</div>}
+        <div className="facture-parties">
+          <div className="facture-partie">
+            <div className="facture-partie-titre">{entreprise?.nom ?? "—"}</div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">Adresse</span>
+              <span>{entreprise?.adresse ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">Telephone</span>
+              <span>{entreprise?.telephone ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">N° IMPOT</span>
+              <span>{entreprise?.nImpot ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">ID NAT</span>
+              <span>{entreprise?.idNational ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">RCCM</span>
+              <span>{entreprise?.rccm ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">Coord Bank</span>
+              <span>{entreprise?.coordonneesBancaires ?? "—"}</span>
+            </div>
           </div>
-          <div className="bl-partie">
-            <div className="bl-partie-titre">Destinataire</div>
-            {client ? (
-              <>
-                <div className="bl-partie-nom">{client.nom}</div>
-                {client.adresse && <div>{client.adresse}</div>}
-                {client.ville && <div>{client.ville}</div>}
-                {client.telephone && <div>Tél : {client.telephone}</div>}
-              </>
-            ) : (
-              <div className="bl-partie-nom">—</div>
-            )}
+
+          <div className="facture-partie">
+            <div className="facture-partie-ligne facture-partie-titre-ligne">
+              <span className="facture-label">A :</span>
+              <span className="facture-partie-titre">{bon.client?.nom ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">Adresse :</span>
+              <span>{bon.client?.adresse ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">Ville</span>
+              <span>{bon.client?.ville ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">N° IMPOT</span>
+              <span>{bon.client?.nImpot ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">ID NAT</span>
+              <span>{bon.client?.idNational ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">RCCM</span>
+              <span>{bon.client?.rccm ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">Code client :</span>
+              <span>{bon.client?.code ?? "—"}</span>
+            </div>
+            <div className="facture-partie-ligne">
+              <span className="facture-label">Telephone</span>
+              <span>{bon.client?.telephone ?? "—"}</span>
+            </div>
           </div>
         </div>
 
-        <div className="bl-trajet">
-          <div className="bl-trajet-item">
-            <span className="bl-label">Trajet</span>
-            <span>{bon.villeDepart} → {bon.villeArrivee}</span>
-          </div>
-          <div className="bl-trajet-item">
-            <span className="bl-label">Véhicule</span>
-            <span>
-              {vehicule
-                ? [vehicule.immatriculation, vehicule.typeVehicule].filter(Boolean).join(" — ") || "—"
-                : "—"}
-            </span>
-          </div>
-          <div className="bl-trajet-item">
-            <span className="bl-label">Chauffeur</span>
-            <span>
-              {chauffeur ? [chauffeur.nom, chauffeur.telephone].filter(Boolean).join(" — ") : "—"}
-            </span>
-          </div>
-        </div>
+        <div className="bl-commande-label">Votre commande du : {formatDate(bon.dateExpedition)}</div>
 
         <table className="bl-table">
           <thead>
             <tr>
-              <th>Description de la marchandise</th>
-              <th className="num">Poids (kg)</th>
+              <th>Référence</th>
+              <th>Description</th>
+              <th className="num">Quantités commandées</th>
+              <th className="num">Quantités livrées</th>
+              <th>Observations</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>{bon.descriptionMarchandise || "—"}</td>
-              <td className="num">
-                {bon.poidsKg != null ? Number(bon.poidsKg).toLocaleString("fr-FR") : "—"}
-              </td>
-            </tr>
+            {bon.lignes.map((l) => (
+              <tr key={l.id}>
+                <td>{l.reference ?? ""}</td>
+                <td>{l.description}</td>
+                <td className="num">{formatQuantite(l.quantiteCommandee)}</td>
+                <td className="num">{formatQuantite(l.quantiteLivree)}</td>
+                <td>{l.observation ?? ""}</td>
+              </tr>
+            ))}
+            {bon.lignes.length === 0 && (
+              <tr>
+                <td colSpan={5} className="empty-row">Aucune ligne.</td>
+              </tr>
+            )}
           </tbody>
         </table>
 
-        {bon.observation && (
-          <div className="bl-observation">
-            <span className="bl-label">Observation :</span> {bon.observation}
+        <div className="bl-visa">
+          <div className="bl-visa-bloc">
+            <span className="bl-label">Date de réception et visa :</span>
+            <div className="bl-visa-espace" />
           </div>
-        )}
-
-        <div className="bl-signature">
-          <div className="bl-signature-bloc">
-            <div className="bl-label">Reçu par (nom du signataire)</div>
-            <div className="bl-signature-valeur">{bon.nomSignataire || " "}</div>
-          </div>
-          <div className="bl-signature-bloc">
-            <div className="bl-label">Date de livraison</div>
-            <div className="bl-signature-valeur">
-              {bon.dateLivraison ? formatDate(bon.dateLivraison) : " "}
-            </div>
-          </div>
-          <div className="bl-signature-bloc">
-            <div className="bl-label">Signature</div>
-            <div className="bl-signature-case">{bon.signe ? "Signé" : ""}</div>
+          <div className="bl-visa-bloc">
+            <span className="bl-label">Date de livraison et visa :</span>
+            <div className="bl-visa-espace" />
           </div>
         </div>
       </div>

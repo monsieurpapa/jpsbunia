@@ -311,33 +311,6 @@ export const depensesFonctionnementFields: FieldConfig[] = [
   { key: "observation", label: "Observation", type: "textarea" },
 ];
 
-export const bonsLivraisonFields: FieldConfig[] = [
-  { key: "numero", label: "N° bon de livraison", type: "text" },
-  { key: "dateExpedition", label: "Date d'expédition", type: "date", required: true },
-  { key: "villeDepart", label: "Ville de départ", type: "text", required: true, defaultValue: "BUNIA" },
-  { key: "villeArrivee", label: "Ville d'arrivée", type: "text", required: true },
-  { key: "vehiculeId", label: "Véhicule", type: "select", optionsResource: "vehicules", optionsLabelKey: "immatriculation" },
-  { key: "chauffeurId", label: "Chauffeur", type: "select", optionsResource: "employes", optionsLabelKey: "nom" },
-  { key: "clientId", label: "Client", type: "select", optionsResource: "clients", optionsLabelKey: "nom" },
-  { key: "descriptionMarchandise", label: "Marchandise transportée", type: "text" },
-  { key: "poidsKg", label: "Poids (kg)", type: "number" },
-  {
-    key: "statut",
-    label: "Statut",
-    type: "select",
-    defaultValue: "EN_COURS",
-    staticOptions: [
-      { value: "EN_COURS", label: "En cours" },
-      { value: "LIVRE", label: "Livré" },
-      { value: "ANNULE", label: "Annulé" },
-    ],
-  },
-  { key: "nomSignataire", label: "Reçu par (nom du signataire)", type: "text" },
-  { key: "dateLivraison", label: "Date de livraison", type: "date" },
-  { key: "signe", label: "Signé à la réception", type: "checkbox", defaultValue: false },
-  { key: "observation", label: "Observation", type: "textarea" },
-];
-
 export const mouvementsCaisseFields: FieldConfig[] = [
   { key: "dateMouvement", label: "Date", type: "date", required: true },
   { key: "canalPaiementId", label: "Canal de paiement", type: "select", required: true, optionsResource: "canaux-paiement", optionsLabelKey: "libelle" },

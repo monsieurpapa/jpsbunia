@@ -8,6 +8,7 @@ import { existsSync } from "node:fs";
 import { eq, inArray, type SQL } from "drizzle-orm";
 import { crudRouter } from "./routes/crud.js";
 import { facturesRouter } from "./routes/factures.js";
+import { bonsLivraisonRouter } from "./routes/bons-livraison.js";
 import { dashboardRouter } from "./routes/dashboard.js";
 import { entrepriseRouter } from "./routes/entreprise.js";
 import { authRouter } from "./routes/auth.js";
@@ -32,7 +33,6 @@ import {
   mouvementsCaisse,
   canauxPaiement,
   categoriesActivite,
-  bonsLivraison,
 } from "./db/schema.js";
 
 /** Restreint le journal des opérations à la famille de types correspondant à la
@@ -120,7 +120,7 @@ app.use("/api/depenses-fonctionnement", ...protect("personnel"), crudRouter(depe
 app.use("/api/mouvements-caisse", ...protect("tresorerie"), crudRouter(mouvementsCaisse));
 app.use("/api/canaux-paiement", ...protect("referentiel"), crudRouter(canauxPaiement));
 app.use("/api/categories-activite", ...protect("referentiel"), crudRouter(categoriesActivite));
-app.use("/api/bons-livraison", ...protect("transport"), crudRouter(bonsLivraison));
+app.use("/api/bons-livraison", ...protect("transport"), bonsLivraisonRouter);
 
 app.use("/api/factures", ...protect("facturation"), facturesRouter);
 app.use("/api/dashboard", requireAuth, requirePasswordAlreadyChanged, dashboardRouter);

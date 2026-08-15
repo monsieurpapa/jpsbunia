@@ -460,3 +460,20 @@ export const bonsLivraison = pgTable(
     check("bons_livraison_statut_check", sql`${t.statut} in ('EN_COURS','LIVRE','ANNULE')`),
   ],
 );
+
+// Lignes d'un bon de livraison (référence/description/quantité commandée vs
+// livrée), sur le même modèle que lignes_facture — reproduit le tableau du
+// modèle papier ("Votre commande du : ..."). descriptionMarchandise/poidsKg
+// restent sur bonsLivraison pour les bons créés avant l'ajout de ce tableau.
+export const lignesBonLivraison = pgTable("lignes_bon_livraison", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  bonLivraisonId: uuid("bon_livraison_id")
+    .notNull()
+    .references(() => bonsLivraison.id, { onDelete: "cascade" }),
+  reference: text("reference"),
+  description: text("description").notNull(),
+  quantiteCommandee: numeric("quantite_commandee", { precision: 18, scale: 3 }).notNull().default("1"),
+  quantiteLivree: numeric("quantite_livree", { precision: 18, scale: 3 }),
+  observation: text("observation"),
+  ordre: smallint("ordre").notNull().default(0),
+});

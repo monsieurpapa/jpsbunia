@@ -1305,9 +1305,11 @@ textarea:focus-visible {
 
 /* ---------------------------------------------------------------------------
    Vue d'impression du bon de livraison
-   Même langage visuel que la facture (boîtes bordées, bandeau gris) mais
-   contenu propre au transport : expéditeur/destinataire, trajet, marchandise,
-   bloc de signature à la réception.
+   Reprend le modèle papier du client : logo à gauche, "BON DE LIVRAISON N°"
+   avec le numéro dans un encart grisé à droite, boîtes émetteur/client
+   identiques à la facture (.facture-parties), tableau de commande
+   (référence/description/quantités commandée-livrée/observations), et deux
+   blancs de visa en bas.
    --------------------------------------------------------------------------- */
 
 .bl-print-screen {
@@ -1317,7 +1319,7 @@ textarea:focus-visible {
 }
 
 .bl-toolbar {
-  max-width: 780px;
+  max-width: 900px;
   margin: 0 auto 1.25rem;
   display: flex;
   align-items: center;
@@ -1338,61 +1340,63 @@ textarea:focus-visible {
 }
 
 .bl-page {
-  max-width: 780px;
+  max-width: 900px;
   margin: 0 auto;
   background: #fff;
   color: #111827;
   padding: 1.5rem;
   box-shadow: var(--shadow-modal);
   border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  line-height: 1.45;
+  font-size: 0.82rem;
+  line-height: 1.4;
   border: 1px solid #9ca3af;
 }
 
 .bl-topbox {
   display: flex;
-  border: 1px solid #111827;
-  margin-bottom: 0.9rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
 }
 
 .bl-logo-cell {
-  flex: 0 0 34%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.75rem;
-  border-right: 1px solid #111827;
 }
 
 .bl-logo {
-  max-width: 100%;
-  max-height: 70px;
+  max-width: 220px;
+  max-height: 80px;
   width: auto;
   display: block;
 }
 
 .bl-title-cell {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.4rem;
 }
 
-.bl-title-bar {
-  background: #e5e7eb;
+.bl-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   font-size: 1.2rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
   color: #111827;
-  padding: 0.8rem 1rem;
 }
 
-.bl-date-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 1.5rem;
-  border-top: 1px solid #111827;
-  padding: 0.55rem 1rem;
+.bl-numero-badge {
+  background: #d1d5db;
+  border: 1px solid #111827;
+  padding: 0.2rem 0.6rem;
+}
+
+.bl-date-row-plain {
+  font-size: 0.9rem;
 }
 
 .bl-label {
@@ -1400,57 +1404,18 @@ textarea:focus-visible {
   color: #111827;
 }
 
-.bl-parties {
-  display: flex;
-  border: 1px solid #111827;
-  margin-bottom: 0.9rem;
-}
-
-.bl-partie {
-  flex: 1;
-  padding: 0.65rem 0.9rem;
-  color: #374151;
-}
-
-.bl-partie:first-child {
-  border-right: 1px solid #111827;
-}
-
-.bl-partie-titre {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #9ca3af;
-  margin-bottom: 0.25rem;
-}
-
-.bl-partie-nom {
+.bl-commande-label {
+  text-align: center;
   font-weight: 700;
   color: #111827;
-  font-size: 0.95rem;
-}
-
-.bl-trajet {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 2rem;
-  border: 1px solid #111827;
-  padding: 0.65rem 0.9rem;
-  margin-bottom: 0.9rem;
-}
-
-.bl-trajet-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  margin: 0 0 0.6rem;
 }
 
 .bl-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 0.9rem;
-  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+  font-size: 0.8rem;
 }
 
 .bl-table th {
@@ -1463,11 +1428,15 @@ textarea:focus-visible {
 }
 
 .bl-table td {
-  padding: 0.6rem;
+  padding: 0.5rem 0.6rem;
   border-left: 1px solid #d1d5db;
   border-right: 1px solid #d1d5db;
   border-bottom: 1px solid #d1d5db;
   color: #1f2937;
+}
+
+.bl-table tbody tr:nth-child(even) td {
+  background: #f3f4f6;
 }
 
 .bl-table .num,
@@ -1477,39 +1446,19 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
-.bl-observation {
-  font-size: 0.85rem;
-  color: #374151;
-  margin-bottom: 0.9rem;
-}
-
-.bl-signature {
+.bl-visa {
   display: flex;
-  gap: 1.5rem;
-  border-top: 1px solid #d1d5db;
-  padding-top: 1rem;
+  gap: 2.5rem;
+  margin-top: 1.5rem;
 }
 
-.bl-signature-bloc {
+.bl-visa-bloc {
   flex: 1;
 }
 
-.bl-signature-valeur {
-  margin-top: 1.5rem;
+.bl-visa-espace {
+  margin-top: 2.5rem;
   border-top: 1px solid #111827;
-  padding-top: 0.3rem;
-  min-height: 1.2em;
-}
-
-.bl-signature-case {
-  margin-top: 1.5rem;
-  border: 1px solid #111827;
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: #111827;
 }
 
 @media print {

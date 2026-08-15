@@ -6,6 +6,7 @@ import { CrudPage } from "./components/CrudPage";
 import { ModuleGate } from "./components/ModuleGate";
 import { Dashboard } from "./pages/Dashboard";
 import { Factures } from "./pages/Factures";
+import { BonsLivraison } from "./pages/BonsLivraison";
 import { Login } from "./pages/Login";
 import { ChangePassword } from "./pages/ChangePassword";
 import { Utilisateurs } from "./pages/Utilisateurs";
@@ -25,7 +26,6 @@ import {
   depensesPersonnelFields,
   depensesFonctionnementFields,
   mouvementsCaisseFields,
-  bonsLivraisonFields,
 } from "./config/resources";
 
 export default function App() {
@@ -94,12 +94,7 @@ export default function App() {
                 path="/bons-livraison"
                 element={
                   <ModuleGate module="transport">
-                    <CrudPage
-                      resource="bons-livraison"
-                      title="Bons de livraison"
-                      fields={bonsLivraisonFields}
-                      printPath="/bons-livraison"
-                    />
+                    <BonsLivraison />
                   </ModuleGate>
                 }
               />
